@@ -55,7 +55,7 @@
 				let testX = rect.left;
 				let testY = rect.top;
 				let fits = false;
-				const buttonGap = timeout === 0 ? 16 : 0;
+				const buttonGap = timeout === 0 ? 16 : 16;
 				switch (dir) {
 					case 'right':
 						testX = rect.right + gap;
@@ -63,9 +63,9 @@
 						fits = viewportWidth - rect.right >= tooltipRect.width + gap;
 						break;
 					case 'left':
-						testX = rect.left - tooltipRect.width - gap - buttonGap;
+						testX = rect.left - tooltipRect.width - gap - 2 * buttonGap;
 						testY = rect.top;
-						fits = rect.left >= tooltipRect.width + gap + buttonGap;
+						fits = rect.left >= tooltipRect.width + gap + 2 * buttonGap;
 						break;
 					case 'below':
 						testX = rect.left + rect.width / 2 - tooltipRect.width / 2;

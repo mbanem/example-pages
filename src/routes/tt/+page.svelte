@@ -11,7 +11,7 @@
 		// ix = 3;
 		switch (ix) {
 			case 0:
-				tt.showTooltip(buttonEl, message, 0, 'below', {
+				tt.showTooltip(buttonEl, message, 2000, 'below', {
 					color: 'navy',
 					backgroundColor: 'cornsilk',
 				});
@@ -21,7 +21,7 @@
 				tt.showTooltip(
 					e,
 					'Database created successfully,Owner: mili,Host: localhost, position MouseEvent above',
-					0,
+					2000,
 					'above',
 					{
 						color: 'lightgreen',
@@ -36,7 +36,7 @@
 				tt.showTooltip(
 					e,
 					'Role owns database objects,Cannot be dropped yet,Remove objects first, position MouseEvent right',
-					0, // ← auto-hide
+					2000, // ← auto-hide
 					'right',
 					{
 						color: 'darkred',
@@ -50,7 +50,7 @@
 				tt.showTooltip(
 					e,
 					'Role owns database objects,Cannot be dropped yet,Remove objects first, position MouseEvent left',
-					0, // ← no auto-hide
+					2000, // ← no auto-hide
 					'left',
 					{
 						color: 'darkred',
@@ -68,23 +68,26 @@
 	let y = $state(100);
 
 	// 2. Variables to store the offset where the user clicked inside the button
-	let offsetX = 0;
-	let offsetY = 0;
+	let offsetX = $state(0);
+	let offsetY = $state(0);
+	let navbarHeight = 32;
 
-	function handleDragStart(event) {
+	function handleDragStart(event: DragEvent) {
 		// Calculate distance from top-left of button to mouse pointer
-		const rect = event.target.getBoundingClientRect();
+		const rect = (event.target as HTMLElement).getBoundingClientRect();
 		offsetX = event.clientX - rect.left;
 		offsetY = event.clientY - rect.top;
+		console.log('offsetY', offsetY);
 
 		// Required for Firefox support
-		event.dataTransfer.setData('text/plain', '');
+		event.dataTransfer?.setData('text/plain', '');
 	}
 
 	function handleDragEnd(event) {
 		// 3. Update coordinates when dragging stops
 		x = event.clientX - offsetX;
-		y = event.clientY - offsetY;
+		y = event.clientY - offsetY - navbarHeight;
+		console.log('offsetY', offsetY - navbarHeight);
 	}
 </script>
 
@@ -99,12 +102,17 @@
 		ondragend={handleDragEnd}
 		style="left: {x}px; top: {y}px;"
 	>
-		anchor
+		draggable
 	</button>
+	<button style="margin:20rem 0 0 30rem">an anchor</button>
 </div>
 <Tooltip bind:this={tt} />
 
 <style>
+	:global(body) {
+		padding: 0;
+		margin: 0;
+	}
 	.container {
 		position: relative;
 		width: 200vw;

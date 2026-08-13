@@ -166,8 +166,9 @@
 		box-sizing: border-box; /* Another common reset property */
 	}
 	.nav-bar {
-		padding: 0 0 5px 0;
-		margin: 0 0 5px 0;
+		padding: 0;
+		margin: 0;
+		height: 32px;
 	}
 	a {
 		display: inline-block;
