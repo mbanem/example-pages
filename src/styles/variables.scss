@@ -1,0 +1,116 @@
+:global(:root) {
+  --attr-id: #008000;
+  --bg: #f8f9fa;
+  --border-color: #d3d3d3;
+  --btn-bg: #121212;
+  --btn-text: #121212;
+  --candidate-color: #000080;
+  --candidate-bg-color: #f0f8ff;
+  --candidate-bg-title-color: rgba(148, 217, 242, 0.4);
+  --card: #ffffff;
+  --clickable-label-color: navy;
+  --close-all-color: #000080;
+  --close-all-bg-color: #f0f8ff;
+  --close-all-bg-hover: #87ceeb;
+  --checkbox-label-color: #000080;
+  --drag-color: #0000ff;
+  --field-name: #1a1a6c;
+  --field-type-color: #000080;
+  --green-type: green;
+  --input-bg-color: #f8f9fa;
+  --input-color: #121212;
+  --label-bg-color: #e1e1e1;
+  --label-color: #121212;
+  --model-name: #000080;
+  --model-bg-color: #d3d3d3;
+  --pre-color: #000080;
+  --panel-bg-color: #f8f9fa;
+  --pink-tomato: #ff6347;
+  --red-type: #ca2c2c;
+  --summary-bg-color: #b3e4f7;
+  --summary-color: #000080;
+  --text: #212529;
+  --tomato-violet: #ff6347;
+  --pre-font: normal 400 13px/20px "Helvetica", sans-serif;
+  --pre-title-color: navy;
+  --pre-title-shadow: rgb(0, 0, 255, 0.5);
+}
+
+:global(.dark) {
+  --attr-id: #90ee90;
+  --bg: #121212;
+  --border-color: #525252;
+  --btn-bg: #f8f9fa;
+  --btn-text: #f8f9fa;
+  --candidate-color: skyblue;
+  --candidate-bg-color: #121212;
+  --candidate-bg-title-color: #323232;
+  --card: #1e1e1e;
+  --clickable-label-color: skyblue;
+  --close-all-color: skyblue;
+  --close-all-bg-color: #121212;
+  --close-all-bg-hover: #656565;
+  --checkbox-label-color: #87ceeb;
+  --drag-color: navy;
+  --field-name: rgb(84, 84, 230);
+  --field-type-color: #87ceeb;
+  --green-type: lightgreen;
+  --input-bg-color: #121212;
+  --input-color: lightgreen;
+  --label-bg-color: #323232;
+  --label-color: #a2a2a2;
+  --model-name: rgb(109, 154, 239);
+  --model-bg-color: #262323;
+  --pre-color: skyblue;
+  --panel-bg-color: #121212;
+  --pink-tomato: rgb(255, 192, 203);
+  --red-type: #f27b7b;
+  --summary-bg-color: skyblue;
+  --summary-color: #121212;
+  --tooltip-color: darkgreen;
+  --tooltip-background-color: lightgray;
+  --text: #e0e0e0;
+  --tomato-violet: #cb739f;
+  --pre-title-color: skyblue;
+  --pre-title-shadow: rgb(255, 255, 255, 0.8);
+}
+
+:global(input[type='text']) {
+  width: 18rem;
+  height: 20px;
+  padding: 6px 0 8px 1rem;
+  outline: none;
+  font-size: 16px;
+  border: 1px solid gray;
+  border-radius: 4px;
+  outline: 1px solid transparent;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+:global(input[type='text']:focus) {
+  outline: 1px solid gray;
+}
+
+:global(body) {
+  margin: 0;
+  padding: 0;
+}
+
+// button {
+//   display: inline-block;
+//   width: max-content;
+//   padding: 3px 1rem;
+//   font-size: 12px;
+//   text-align: center;
+//   margin-right: 1rem;
+
+//   &:last-child {
+//     margin-right: 0;
+//   }
+// }
+
+// pre {
+//   font: var(--pre-font);
+//   color: var(--pre-color);
+// }

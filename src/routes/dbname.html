@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .dbname-block {
+      display: grid;
+      grid-template-columns: repeat(3, 12rem);
+      column-gap: 0.2rem;
+      margin: 0;
+      padding: 0;
+
+      label {
+        width: 10rem;
+        padding: 0;
+        margin: 0 1rem 6px 0;
+      }
+
+      input {
+        width: 11rem;
+        margin: 0;
+        padding: 3px 0 3px 0.5rem;
+        border: 1px solid lightgray;
+        border-radius: 3px;
+
+        &:focus {
+          outline: 1px solid skyblue;
+        }
+      }
+    }
+  </style>
+  <script>
+    const payload = {}
+    payload.dbname = 'products'
+    payload.owner = 'IBM'
+
+  </script>
+</head>
+
+<body>
+  <div class="dbname-block">
+    <label for='dbNameId'>
+      Database Name
+      <br /><input id='dbnameId' type='text' placeholder='avoid dashes like db-workers' />
+    </label>
+    <label for='dbOwnerId'>
+      Database Owner
+      <br /><input id='dbownerId' type='text' />
+    </label>
+    <label for='dbOwnerPasswordId'>
+      Owner's Password
+      <br /><input id='dbnameId' type='password' />
+    </label>
+  </div>
+</body>
+
+</html>

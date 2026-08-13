@@ -1,0 +1,61 @@
+type TColorEntry = {
+  color: string
+  name: string
+}
+
+const colors_in_hex: TColorEntry[] = [
+  { color: '#f0f8ff', name: 'AliceBlue' }, { color: '#faebd7', name: 'AntiqueWhite' }, { color: '#00ffff', name: 'Aqua' },
+  { color: '#7fffd4', name: 'Aquamarine' }, { color: '#f0ffff', name: 'Azure' }, { color: '#f5f5dc', name: 'Beige' },
+  { color: '#ffe4c4', name: 'Bisque' }, { color: '#000000', name: 'Black' }, { color: '#ffebcd', name: 'BlanchedAlmond' },
+  { color: '#0000ff', name: 'Blue' }, { color: '#8a2be2', name: 'BlueViolet' }, { color: '#a52a2a', name: 'Brown' },
+  { color: '#deb887', name: 'BurlyWood' }, { color: '#5f9ea0', name: 'CadetBlue' }, { color: '#7fff00', name: 'Chartreuse' },
+  { color: '#d2691e', name: 'Chocolate' }, { color: '#ff7f50', name: 'Coral' }, { color: '#6495ed', name: 'CornflowerBlue' },
+  { color: '#fff8dc', name: 'Cornsilk' }, { color: '#dc143c', name: 'Crimson' }, { color: '#00ffff', name: 'Cyan' },
+  { color: '#00008b', name: 'DarkBlue' }, { color: '#008b8b', name: 'DarkCyan' }, { color: '#b8860b', name: 'DarkGoldenRod' },
+  { color: '#a9a9a9', name: 'DarkGray' }, { color: '#a9a9a9', name: 'DarkGrey' }, { color: '#006400', name: 'DarkGreen' },
+  { color: '#bdb76b', name: 'DarkKhaki' }, { color: '#8b008b', name: 'DarkMagenta' }, { color: '#556b2f', name: 'DarkOliveGreen' },
+  { color: '#ff8c00', name: 'DarkOrange' }, { color: '#9932cc', name: 'DarkOrchid' }, { color: '#8b0000', name: 'DarkRed' },
+  { color: '#e9967a', name: 'DarkSalmon' }, { color: '#8fbc8f', name: 'DarkSeaGreen' }, { color: '#483d8b', name: 'DarkSlateBlue' },
+  { color: '#2f4f4f', name: 'DarkSlateGray' }, { color: '#2f4f4f', name: 'DarkSlateGrey' }, { color: '#00ced1', name: 'DarkTurquoise' },
+  { color: '#9400d3', name: 'DarkViolet' }, { color: '#ff1493', name: 'DeepPink' }, { color: '#00bfff', name: 'DeepSkyBlue' },
+  { color: '#696969', name: 'DimGray' }, { color: '#696969', name: 'DimGrey' }, { color: '#1e90ff', name: 'DodgerBlue' },
+  { color: '#b22222', name: 'FireBrick' }, { color: '#fffaf0', name: 'FloralWhite' }, { color: '#228b22', name: 'ForestGreen' },
+  { color: '#ff00ff', name: 'Fuchsia' }, { color: '#dcdcdc', name: 'Gainsboro' }, { color: '#f8f8ff', name: 'GhostWhite' },
+  { color: '#ffd700', name: 'Gold' }, { color: '#daa520', name: 'GoldenRod' }, { color: '#808080', name: 'Gray' },
+  { color: '#808080', name: 'Grey' }, { color: '#008000', name: 'Green' }, { color: '#adff2f', name: 'GreenYellow' },
+  { color: '#f0fff0', name: 'HoneyDew' }, { color: '#ff69b4', name: 'HotPink' }, { color: '#cd5c5c', name: 'IndianRed' },
+  { color: '#4b0082', name: 'Indigo' }, { color: '#fffff0', name: 'Ivory' }, { color: '#f0e68c', name: 'Khaki' },
+  { color: '#e6e6fa', name: 'Lavender' }, { color: '#fff0f5', name: 'LavenderBlush' }, { color: '#7cfc00', name: 'LawnGreen' },
+  { color: '#fffacd', name: 'LemonChiffon' }, { color: '#add8e6', name: 'LightBlue' }, { color: '#f08080', name: 'LightCoral' },
+  { color: '#e0ffff', name: 'LightCyan' }, { color: '#fafad2', name: 'LightGoldenRodYellow' }, { color: '#d3d3d3', name: 'LightGray' },
+  { color: '#d3d3d3', name: 'LightGrey' }, { color: '#90ee90', name: 'LightGreen' }, { color: '#ffb6c1', name: 'LightPink' },
+  { color: '#ffa07a', name: 'LightSalmon' }, { color: '#20b2aa', name: 'LightSeaGreen' }, { color: '#87cefa', name: 'LightSkyBlue' },
+  { color: '#778899', name: 'LightSlateGray' }, { color: '#778899', name: 'LightSlateGrey' }, { color: '#b0c4de', name: 'LightSteelBlue' },
+  { color: '#ffffe0', name: 'LightYellow' }, { color: '#00ff00', name: 'Lime' }, { color: '#32cd32', name: 'LimeGreen' },
+  { color: '#faf0e6', name: 'Linen' }, { color: '#ff00ff', name: 'Magenta' }, { color: '#800000', name: 'Maroon' },
+  { color: '#66cdaa', name: 'MediumAquaMarine' }, { color: '#0000cd', name: 'MediumBlue' }, { color: '#ba55d3', name: 'MediumOrchid' },
+  { color: '#9370db', name: 'MediumPurple' }, { color: '#3cb371', name: 'MediumSeaGreen' }, { color: '#7b68ee', name: 'MediumSlateBlue' },
+  { color: '#00fa9a', name: 'MediumSpringGreen' }, { color: '#48d1cc', name: 'MediumTurquoise' }, { color: '#c71585', name: 'MediumVioletRed' },
+  { color: '#191970', name: 'MidnightBlue' }, { color: '#f5fffa', name: 'MintCream' }, { color: '#ffe4e1', name: 'MistyRose' },
+  { color: '#ffe4b5', name: 'Moccasin' }, { color: '#ffdead', name: 'NavajoWhite' }, { color: '#000080', name: 'Navy' },
+  { color: '#fdf5e6', name: 'OldLace' }, { color: '#808000', name: 'Olive' }, { color: '#6b8e23', name: 'OliveDrab' },
+  { color: '#ffa500', name: 'Orange' }, { color: '#ff4500', name: 'OrangeRed' }, { color: '#da70d6', name: 'Orchid' },
+  { color: '#eee8aa', name: 'PaleGoldenRod' }, { color: '#98fb98', name: 'PaleGreen' }, { color: '#afeeee', name: 'PaleTurquoise' },
+  { color: '#db7093', name: 'PaleVioletRed' }, { color: '#ffefd5', name: 'PapayaWhip' }, { color: '#ffdab9', name: 'PeachPuff' },
+  { color: '#cd853f', name: 'Peru' }, { color: '#ffc0cb', name: 'Pink' }, { color: '#dda0dd', name: 'Plum' },
+  { color: '#b0e0e6', name: 'PowderBlue' }, { color: '#800080', name: 'Purple' }, { color: '#663399', name: 'RebeccaPurple' },
+  { color: '#ff0000', name: 'Red' }, { color: '#bc8f8f', name: 'RosyBrown' }, { color: '#4169e1', name: 'RoyalBlue' },
+  { color: '#8b4513', name: 'SaddleBrown' }, { color: '#fa8072', name: 'Salmon' }, { color: '#f4a460', name: 'SandyBrown' },
+  { color: '#2e8b57', name: 'SeaGreen' }, { color: '#fff5ee', name: 'SeaShell' }, { color: '#a0522d', name: 'Sienna' },
+  { color: '#c0c0c0', name: 'Silver' }, { color: '#87ceeb', name: 'SkyBlue' }, { color: '#6a5acd', name: 'SlateBlue' },
+  { color: '#708090', name: 'SlateGray' }, { color: '#708090', name: 'SlateGrey' }, { color: '#fffafa', name: 'Snow' },
+  { color: '#00ff7f', name: 'SpringGreen' }, { color: '#4682b4', name: 'SteelBlue' }, { color: '#d2b48c', name: 'Tan' },
+  { color: '#008080', name: 'Teal' }, { color: '#d8bfd8', name: 'Thistle' }, { color: '#ff6347', name: 'Tomato' },
+  { color: '#40e0d0', name: 'Turquoise' }, { color: '#ee82ee', name: 'Violet' }, { color: '#f5deb3', name: 'Wheat' },
+  { color: '#ffffff', name: 'White' }, { color: '#f5f5f5', name: 'WhiteSmoke' }, { color: '#ffff00', name: 'Yellow' },
+  { color: '#9acd32', name: 'YellowGreen' },
+]
+
+export const getColorHexArray = (): string[] => {
+  return colors_in_hex.map(entry => entry.color)
+}

@@ -1,0 +1,14 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  bcrypt: true
+  esbuild: true
+  prisma: true
+  svelte-preprocess: true
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@prisma/engines'
+  - bcrypt
+  - esbuild
+  - prisma
+  - svelte-preprocess

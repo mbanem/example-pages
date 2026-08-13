@@ -1,0 +1,527 @@
+<script lang="ts">
+	// fieldInfo is a line following field names
+	import { schema } from './schema_prisma';
+
+	type FieldInfo = {
+		type: string;
+		prismaAttrs: string; // everything after the type
+	};
+
+	type ModelInfo = {
+		fields: {
+			[fieldName: string]: FieldInfo;
+		};
+		modelAttributes: string[]; // e.g. ["@@map(\"users\")", "@@index([email])"]
+	};
+
+	// there are many models/tables in schema.prisma
+	type SchemaModels = {
+		[modelName: string]: ModelInfo;
+	};
+	type Models = {
+		[modelName: string]: string[];
+	};
+
+	let strModelNames = '|';
+
+	const modelsFieldNames: Models = {};
+
+	function sortObjectKeys<T>(obj: Record<string, T>): Record<string, T> {
+		return Object.fromEntries(
+			/*
+        "base" ignores case and diacritics (so User, user, Úser, üser all sort together).
+        "accent" would keep diacritics (ú vs u) but ignore case.
+        "case" would respect case but ignore accents.
+        "variant" is the strictest (default) and respects everything.
+        numeric sorts asc f10, f2 as f2 f10 -- not as the ascii's f10 f2
+      */
+			Object.entries(obj).sort(([a], [b]) =>
+				a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true })
+			)
+		);
+	}
+
+	function parsePrismaSchema(schemaContent: string): SchemaModels {
+		const models: SchemaModels = {};
+		const modelRegex = /model\s+(\w+)\s*{([^}]*)}/gms;
+
+		let modelMatch;
+		while ((modelMatch = modelRegex.exec(schemaContent)) !== null) {
+			const [, modelName, body] = modelMatch;
+			const fields: Record<string, FieldInfo> = {};
+			const modelAttributes: string[] = [];
+
+			// Remove block comments first
+			let bodyWithoutBlocks = body.replace(/\/\*[\s\S]*?\*\//g, '');
+
+			const lines = bodyWithoutBlocks
+				.split('\n')
+				.map((line) => line.trim().replace(/\s{2,}|\t/gm, ' '))
+				.filter(Boolean);
+
+			for (const line of lines) {
+				if (line.startsWith('//')) {
+					continue; // skip single-line comment
+				}
+
+				if (line.startsWith('@@')) {
+					modelAttributes.push(line);
+					continue;
+				}
+
+				const [fieldName, fieldType, ...rest] = line.split(/\s+/);
+				if (!fieldName || !fieldType) {
+					continue;
+				}
+
+				fields[fieldName] = {
+					type: fieldType,
+					prismaAttrs: rest.join(' ')
+				};
+			}
+
+			models[modelName] = {
+				fields: sortObjectKeys(fields),
+				modelAttributes
+			};
+		}
+
+		/* 
+    This function returns models as SchemaModels so use it to populate above Models
+    for data entry fields avoid fieldNames that are
+    models itself like Todo, Profile, containing @@ chars 
+    and some of @unique, @default, @default(now(), modelName), @relation
+  */
+		// make a string-list of modelNames like '|Todo|User|Profile|'
+		for (const [modelName] of Object.entries(models)) {
+			strModelNames += modelName + '|';
+		}
+		/*
+    modelsFieldNames['User'] holds
+    email: String 
+    firstName: String 
+    id: String 
+    lastName: String 
+    password: String 
+    profile: Profile?         -- incorrect as model name
+    role: Role 
+    updatedAt: DateTime? 
+    userAuthToken: String     -- incorrect @unique
+
+  */
+		for (const [modelName, theFields] of Object.entries(models)) {
+			let arrFields = [];
+			const [, fields] = Object.entries(theFields)[0];
+			for (let [fieldName, { type, prismaAttrs }] of Object.entries(fields)) {
+				if ('0|1'.includes(fieldName)) {
+					continue;
+				}
+				// type could be optional, so remove ? if any as it cannot match model name
+				type = type.replace(/\?/g, '');
+				if (fieldName.includes('password')) {
+					// passwordHash or similar
+					fieldName = 'password';
+				}
+				if (type === 'DateTime') {
+					type = 'Date';
+				}
+				// exclude this field names
+				const pattern = '@default\\((' + strModelNames + 'now\\(\\))\\)';
+				let regex = new RegExp(pattern);
+				let m = prismaAttrs.match(regex); // null if failed
+				if (m && m[1]) {
+					continue; // not data entry field name
+				}
+
+				// type cannot be a model name like Profile...
+				regex = new RegExp('(' + strModelNames.slice(1, -1) + ')');
+				m = type.match(regex); // null if failed
+				if (m && m[1]) {
+					continue;
+				}
+
+				m = prismaAttrs.match(/(@unique|@createdAt)/); // non-mutable
+				if (m && m[1]) {
+					continue;
+				}
+
+				const hasBrackets = type.includes('[]');
+				const hasId = prismaAttrs.includes('@id');
+				const hasRole = type === 'Role';
+				const include = !hasBrackets || hasId || hasRole;
+				if (include) {
+					arrFields.push(fieldName + ': ' + type);
+				}
+			}
+			try {
+				modelsFieldNames[modelName] = arrFields;
+			} catch (err) {
+				const msg = err instanceof Error ? err.message : String(err);
+				console.log('cannot add a model' + msg);
+			}
+		}
+		// console.log('models', models);
+		return models;
+	}
+
+	function dateTimeToDate(type: string) {
+		if (type === 'DateTime') {
+			return 'Date';
+		}
+		return type;
+	}
+	function sortRecordByKey<T extends Record<string, object>>(rec: T) {
+		const sortedKeys = (Object.keys(rec as T) as Array<keyof T>).sort();
+		// console.log(sortedKeys);
+		const sortedRec = sortedKeys.reduce(
+			(acc, key) => {
+				acc[key] = rec[key];
+				return acc;
+			},
+			{} as typeof rec
+		);
+
+		return sortedRec;
+	}
+	function renderParsedSchema(schemaModels: SchemaModels) {
+		type TTypeAttrs = { type: string; prismaAttrs: string };
+		type TPrismaColumns = Record<string, TTypeAttrs>;
+		type TPrismaModels = Record<string, TPrismaColumns>;
+		type TModel = Record<string, TPrismaColumns>;
+		let markup = '';
+		let types = '';
+		let includeTypes = 'import type { ';
+		let prismaColumns: TPrismaColumns = {};
+		let prismaModels: TPrismaModels = {};
+
+		try {
+			for (const [modelName, theFields] of Object.entries(schemaModels)) {
+				includeTypes += modelName + ', ';
+				if (modelName === 'User') {
+					includeTypes += 'Role, ';
+				}
+				const [, fields] = Object.entries(theFields)[0];
+				let m = '';
+
+				for (const [fieldName, { type, prismaAttrs }] of Object.entries(fields)) {
+					if ('0|1'.includes(fieldName)) continue;
+					types += `${fieldName}: ${dateTimeToDate(type)};
+    `;
+					if (
+						(prismaAttrs.includes('@default') && !prismaAttrs.includes('@id')) ||
+						prismaAttrs.includes('@updatedAt') ||
+						prismaAttrs.includes('@unique')
+					) {
+						m += `<p>${fieldName}</p><p>type:${type} <span style='color:pink'>${prismaAttrs ?? 'na'}</span></p>`;
+					} else {
+						m += `<p>${fieldName}</p><p>type:${type} ${prismaAttrs ?? 'na'}</p>`;
+						// @ts-expects-error
+						prismaColumns[fieldName] = { type, prismaAttrs };
+					}
+				}
+				prismaColumns = sortRecordByKey(prismaColumns);
+				prismaModels[modelName] = prismaColumns;
+				types =
+					types.slice(0, -3) +
+					` };
+`;
+
+				// render field name as a collapsed summary to reveal field list when expanded
+				markup += `<details>
+          <summary class='model-name'>${modelName}</summary>
+          <div class='fields-column'>${m}</div>
+          </details>`;
+			}
+			// includeTypes = includeTypes.slice(0, -2) + ` }  from '$lib/types/types';
+			// `
+			// vscode.postMessage({ command: 'saveTypes', payload: {types, includeTypes} })
+		} catch (err) {
+			// vscode.postMessage({command: 'log',  text: 'renderParsedSchema: ' + err });
+		}
+		// now all the markup constructed as a string render into  schemaContainerEl
+		// schemaContainerEl.innerHTML = markup
+		 // console.log(prismaModels);
+		return markup;
+
+		// schemaContainerEl gets click event but it has to be from the first <p> element
+		// and that fieldname (innerText) id ignored if already saved in the fields
+		// schemaContainerEl.addEventListener('click', (event) => {
+
+		//   if (event.target.tagName === 'SUMMARY') {
+		//     modelObjName = event.target.innerText;
+		//     routeNameEl.value = modelObjName.toLowerCase();
+		//     routeNameEl.focus()
+		//     routeNameEl.click()
+		//     const details = event.target.closest('details');
+		//     if (details.open) {
+		//       closeSchemaModels();
+		//       clearLabelText();
+		//       return;
+		//     }
+		//     changeLabelText('pink', 'Change Route Name if necessary', 4000)
+		//     //----------------
+		//     if (fieldModels){
+		//       // msgEl.innerHTML += '<br/>SUMMARY fieldModels found: '+ JSON.stringify(fieldModels) + ' modelObjName: '+ modelObjName;
+
+		//       try{
+		//         theFields = fieldModels[modelObjName];
+		//         msgEl.innerHTML += '<pre>'+ theFields + '</pre>';
+		//         if (theFields){
+		//           for (field of theFields){
+		//             // msgEl.innerHTML += '<br/>theFields loop: '+ theFields[i];
+		//             fieldNameEl.value = field;
+		//             fieldNameEl.dispatchEvent(enterKeyEvent);
+		//           }
+		//           msgEl.innerHTML += '<pre>fields<br/>'+ JSON.stringify(fields,null,2) + '</pre>';
+		//           return
+		//         }
+		//       }catch(err){
+		//         const msg = err instanceof Error ? err.message : String(err);
+		//         msgEl.innerHTML += '<br/>fieldModels[modelObjName] NOT found err: '+ msg
+		//       }
+		//     }else{
+		//       msgEl.innerHTML += '<br/>SUMMARY fieldModels NOT found'
+		//     }
+		//   }
+
+		//   // the click is not on a SUMMARY, so a field name is clicked
+		//   // msgEl.innerHTML += '<br/>the click is not on a SUMMARY'
+		//   const el = event.target
+		//   const fieldName = el.innerText
+		//   let type = dateTimeToDate(el.nextSibling.innerText.match(/type:(\\S+)/)?.[1])
+		//   if (!'String|Number|Boolean'.includes(type)) {
+		//     return
+		//   }
+
+		//   // the standard procedure for entering a new fieldname is via input box + Enter
+		//   if (el.tagName === 'P' && el.nextSibling.tagName === 'P' && !fields.includes(fieldName)) {
+		//     // we need input box so preserve its entry if any and restore after
+		//     const savedEntry = fieldNameEl.value
+		//     fieldNameEl.value = `${fieldName}: ${type}`
+		//     fieldNameEl.dispatchEvent(enterKeyEvent)
+		//     fieldNameEl.value = savedEntry
+		//   }
+		// })
+	}
+	// console.log('schema', schema);
+	const parsedSchema = parsePrismaSchema(schema);
+	const markup = renderParsedSchema(parsedSchema);
+	// console.log('const parsedSchema = ', parsedSchema);
+	// console.log(markup);
+
+	// this should be part of Webview Extension markup using only HTML JavaScript
+	// <script>
+	let modelName = '';
+	function setCandidateFields(event: MouseEvent | KeyboardEvent) {
+		const el = event.target as HTMLElement;
+		if (el.tagName === 'SUMMARY') {
+			modelName = el.innerText;
+		}
+	}
+</script>
+
+<!-- This is markup returned from parsePrismaSchema(schema) -->
+<!-- 
+<div
+	class="prisma-block"
+	onclick={setCandidateFields}
+	onkeydown={setCandidateFields}
+	aria-label="expand or collapse a block holding prisma ORM models"
+	role="button"
+	tabindex="0"
+>
+	<div class="left-column">
+		<details>
+			<summary class="model-name">User</summary>
+			<div class="fields-column">
+				<p>articles</p>
+				<p>type:Article[]</p>
+				<p>createdAt</p>
+				<p>type:DateTime <span style="color:pink">@default(now()) @map("created_at")</span></p>
+				<p>email</p>
+				<p>type:String</p>
+				<p>firstName</p>
+				<p>type:String @map("first_name")</p>
+				<p>id</p>
+				<p>type:String <span style="color:pink">@id @default(uuid())</span></p>
+				<p>lastName</p>
+				<p>type:String @map("last_name")</p>
+				<p>passwordHash</p>
+				<p>type:String @map("password_hash")</p>
+				<p>posts</p>
+				<p>type:Post[]</p>
+				<p>profile</p>
+				<p>type:Profile?</p>
+				<p>role</p>
+				<p>type:Role <span style="color:pink">@default(USER)</span></p>
+				<p>todos</p>
+				<p>type:Todo[] // arrays are optional and could be empty</p>
+				<p>updatedAt</p>
+				<p>type:DateTime? <span style="color:pink">@updatedAt @map("updated_at")</span></p>
+				<p>userAuthToken</p>
+				<p>type:String <span style="color:pink">@unique @map("user_auth_token")</span></p>
+			</div>
+		</details>
+		<details>
+			<summary class="model-name">Profile</summary>
+			<div class="fields-column">
+				<p>bio</p>
+				<p>type:String?</p>
+				<p>createdAt</p>
+				<p>type:DateTime <span style="color:pink">@default(now()) @map("created_at")</span></p>
+				<p>id</p>
+				<p>type:String <span style="color:pink">@id @default(uuid())</span></p>
+				<p>updatedAt</p>
+				<p>type:DateTime? <span style="color:pink">@updatedAt @map("updated_at")</span></p>
+				<p>user</p>
+				<p>type:User @relation(fields: [userId], references: [id])</p>
+				<p>userId</p>
+				<p>type:String <span style="color:pink">@unique @map("user_id")</span></p>
+			</div>
+		</details>
+		<details>
+			<summary class="model-name">Article</summary>
+			<div class="fields-column">
+				<p>author</p>
+				<p>type:User @relation(fields: [authorId], references: [id])</p>
+				<p>authorId</p>
+				<p>type:String @map("author_id")</p>
+				<p>content</p>
+				<p>type:String</p>
+				<p>id</p>
+				<p>type:String <span style="color:pink">@id @default(uuid())</span></p>
+				<p>title</p>
+				<p>type:String</p>
+			</div>
+		</details>
+		<details>
+			<summary class="model-name">Post</summary>
+			<div class="fields-column">
+				<p>author</p>
+				<p>type:User @relation(fields: [authorId], references: [id])</p>
+				<p>authorId</p>
+				<p>type:String @map("author_id")</p>
+				<p>categories</p>
+				<p>type:Category[]</p>
+				<p>content</p>
+				<p>type:String?</p>
+				<p>createdAt</p>
+				<p>type:DateTime <span style="color:pink">@default(now()) @map("created_at")</span></p>
+				<p>id</p>
+				<p>type:String <span style="color:pink">@id @default(uuid())</span></p>
+				<p>published</p>
+				<p>type:Boolean <span style="color:pink">@default(false)</span></p>
+				<p>title</p>
+				<p>type:String @db.VarChar(255)</p>
+				<p>updatedAt</p>
+				<p>type:DateTime? <span style="color:pink">@updatedAt @map("updated_at")</span></p>
+			</div>
+		</details>
+		<details>
+			<summary class="model-name">Category</summary>
+			<div class="fields-column">
+				<p>id</p>
+				<p>type:Int <span style="color:pink">@id @default(autoincrement())</span></p>
+				<p>name</p>
+				<p>type:String</p>
+				<p>posts</p>
+				<p>type:Post[]</p>
+			</div>
+		</details>
+		<details>
+			<summary class="model-name">Todo</summary>
+			<div class="fields-column">
+				<p>completed</p>
+				<p>type:Boolean <span style="color:pink">@default(false)</span></p>
+				<p>content</p>
+				<p>type:String</p>
+				<p>createdAt</p>
+				<p>type:DateTime <span style="color:pink">@default(now()) @map("created_at")</span></p>
+				<p>id</p>
+				<p>type:String <span style="color:pink">@id @default(uuid())</span></p>
+				<p>priority</p>
+				<p>type:Int <span style="color:pink">@default(0)</span></p>
+				<p>title</p>
+				<p>type:String</p>
+				<p>updatedAt</p>
+				<p>type:DateTime? <span style="color:pink">@updatedAt @map("updated_at")</span></p>
+				<p>user</p>
+				<p>type:User @relation(fields: [userId], references: [id])</p>
+				<p>userId</p>
+				<p>type:String @map("user_id")</p>
+			</div>
+		</details>
+	</div>
+</div>
+<div class="right-column">
+	Candidate Fields
+	<div class="candidate-fields"></div>
+</div>
+
+<style lang="scss">
+	.prisma-block {
+		display: grid;
+		grid-template-columns: 17rem 9rem;
+		width: 17rem;
+		padding: 0;
+		margin: 0;
+	}
+	.left-column {
+		width: 17rem;
+	}
+	.right-column {
+		width: 9rem;
+		border: 1px solid gray;
+		border-radius: 6px;
+	}
+	.fields-column {
+		display: grid;
+		grid-template-columns: 7rem 9.5rem;
+		column-gap: 5px;
+		width: 17rem;
+		padding: 6px 0 6px 1rem;
+		height: auto;
+		font-family: Georgia, 'Times New Roman', Times, serif;
+		font-size: 15px !important;
+		font-weight: 500 !important;
+	}
+	.model-name {
+		color: #3e3e3e;
+		background-color: #e3e3e3;
+		margin-top: 3px;
+		width: 17rem;
+		border-radius: 6px;
+		padding-left: 1rem;
+		cursor: pointer;
+	}
+	.fields-column {
+		display: grid;
+		grid-template-columns: 7rem 9.5rem;
+		column-gap: 5px;
+		width: max-content;
+		padding: 6px 0 6px 1rem;
+		height: auto;
+		font-family: Georgia, 'Times New Roman', Times, serif;
+		font-size: 15px !important;
+		font-weight: 500 !important;
+	}
+
+	.fields-column p {
+		margin: 4px 0 0 0;
+		padding: 2px 0  4px 6px;
+		border-bottom: 1px solid lightgray;
+		text-wrap: wrap;
+	}
+
+	.fields-column p:nth-child(odd) {
+		color: skyblue;
+		cursor: pointer;
+		width: 100%;
+		padding: 2px 0 2px 0.5rem;
+	}
+
+	.fields-column p:nth-child(even) {
+		font-weight: 400 !important;
+		font-size: 12px !important;
+	}
+</style> -->
