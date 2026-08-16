@@ -11,7 +11,7 @@
 		// ix = 3;
 		switch (ix) {
 			case 0:
-				tt.showTooltip(buttonEl, message, 2000, 'below', {
+				tt.showTooltip(buttonEl, message, 0, 'below', {
 					color: 'navy',
 					backgroundColor: 'cornsilk',
 				});
@@ -21,7 +21,7 @@
 				tt.showTooltip(
 					e,
 					'Database created successfully,Owner: mili,Host: localhost, position MouseEvent above',
-					2000,
+					0,
 					'above',
 					{
 						color: 'lightgreen',
@@ -36,7 +36,7 @@
 				tt.showTooltip(
 					e,
 					'Role owns database objects,Cannot be dropped yet,Remove objects first, position MouseEvent right',
-					2000, // ← auto-hide
+					0, // ← auto-hide
 					'right',
 					{
 						color: 'darkred',
@@ -50,7 +50,7 @@
 				tt.showTooltip(
 					e,
 					'Role owns database objects,Cannot be dropped yet,Remove objects first, position MouseEvent left',
-					2000, // ← no auto-hide
+					0, // ← no auto-hide
 					'left',
 					{
 						color: 'darkred',
@@ -85,8 +85,8 @@
 
 	function handleDragEnd(event) {
 		// 3. Update coordinates when dragging stops
-		x = event.clientX - offsetX;
-		y = event.clientY - offsetY - navbarHeight;
+		x = window.scrollX + event.clientX - offsetX;
+		y = window.scrollY + event.clientY - offsetY - navbarHeight;
 		console.log('offsetY', offsetY - navbarHeight);
 	}
 </script>
@@ -102,7 +102,7 @@
 		ondragend={handleDragEnd}
 		style="left: {x}px; top: {y}px;"
 	>
-		draggable
+		anchor
 	</button>
 	<button style="margin:20rem 0 0 30rem">an anchor</button>
 </div>

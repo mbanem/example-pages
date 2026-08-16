@@ -288,7 +288,6 @@
 	}
 
 	function showTooltip(e: MouseEvent, msg: string, className: string = 'tomato', milisec: number = 2000) {
-		console.log(msg, className);
 		message = msg;
 		msgClass = className;
 		setTimeout(() => {

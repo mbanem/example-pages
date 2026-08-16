@@ -109,7 +109,7 @@
 			fontFamily: 'system-ui, sans-serif',
 			fontSize: '14px',
 			width: 'auto',
-			padding: '12px 26px 8px 12px',
+			padding: timeout === 0 ? '12px 26px 8px 12px' : '12px 12px 8px 12px',
 			// CRITICAL: Added left/top transitions for smooth tracking movement
 			transition: 'opacity 0.3s ease, left 0.2s cubic-bezier(0.25, 1, 0.5, 1), top 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
 			...userStyles,
@@ -206,7 +206,7 @@
 					background: 'transparent',
 					border: 'none',
 					cursor: 'pointer',
-					fontSize: '14px',
+					fontSize: '13px',
 					padding: '0',
 					lineHeight: '1',
 					opacity: '0.7',
@@ -218,7 +218,7 @@
 					document.querySelector('.dynamic-tooltip-anchor')?.classList.remove('dynamic-tooltip-anchor');
 					if (tooltipEl) fadeOutAndRemove(tooltipEl);
 				};
-				tooltipEl.style.paddingRight = '20px';
+				tooltipEl.offsetHeight;
 				tooltipEl.appendChild(closeBtn);
 			}
 
