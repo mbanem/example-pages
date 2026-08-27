@@ -244,7 +244,7 @@
 		margin-top: 2rem;
 	}
 	.first-container {
-		@include container($head: 'First Container', $head-color: skyblue);
+		@include container($caption: 'First Container', $caption-color: skyblue);
 		border: 1px solid gray;
 		border-radius: 10px;
 		color: navy;
@@ -306,7 +306,7 @@
 		}
 	}
 	.second-container {
-		@include container($head: 'Second Container', $head-color: skyblue);
+		@include container($caption: 'Second Container', $caption-color: skyblue);
 		color: green;
 		padding: 1rem;
 		border: 1px solid gray;

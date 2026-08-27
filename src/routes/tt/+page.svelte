@@ -1,6 +1,8 @@
 <script lang="ts">
-	import Tooltip from './reactive.svelte';
-	let tt: Tooltip;
+	import RTooltip from './reactive.svelte';
+	import Tooltip from './classTooltip';
+
+	let tt: RTooltip;
 	let buttonEl: HTMLButtonElement;
 	let message = 'DB Verification Result, from Prisma ORM for, Role abd DB objects,position buttonEl below';
 	let ix = 0;
@@ -89,6 +91,36 @@
 		y = window.scrollY + event.clientY - offsetY - navbarHeight;
 		console.log('offsetY', offsetY - navbarHeight);
 	}
+	let t1: Tooltip;
+	let t2: Tooltip;
+	// Auto-hide after 3s
+	function showIt() {
+		console.log('[/tt/+page.svelte] showIt');
+		t1 = new Tooltip({
+			anchor: buttonEl,
+			content: 'DB Verification Result, Role and DB objects',
+			timeout: 3000,
+			stick: 'below',
+			styles: { color: 'navy', backgroundColor: 'cornsilk' },
+		});
+
+		// Persistent with close button
+		t2 = new Tooltip({
+			anchor: event,
+			content: 'Role owns database objects, Cannot be dropped yet',
+			timeout: 0,
+			stick: 'right',
+			styles: {
+				color: 'darkred',
+				backgroundColor: '#fff0f0',
+				border: '1px solid crimson',
+			},
+			onDestroy: () => console.log('tooltip closed'),
+		});
+	}
+	function destroyIt() {
+		t1.destroy();
+	}
 </script>
 
 <!-- Outer container must cover the screen to allow dropping anywhere -->
@@ -104,9 +136,10 @@
 	>
 		anchor
 	</button>
-	<button style="margin:20rem 0 0 30rem">an anchor</button>
+	<button onclick={showIt} style="margin:5rem 0 0 5rem;">show it</button>
+	<button onclick={destroyIt} style="margin:15rem 0 0 15rem;">destroy it</button>
 </div>
-<Tooltip bind:this={tt} />
+<RTooltip bind:this={tt} />
 
 <style>
 	:global(body) {

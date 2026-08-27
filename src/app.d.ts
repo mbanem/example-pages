@@ -3,20 +3,32 @@
 // import * as Types from '$lib/types/types';
 declare global {
 	export type Field = {
-		name: string;
-		type: string;
-		isArray: boolean;
-		isOptional: boolean;
-		isDataEntry: boolean;
-		attrs?: string;
-	};
+		name: string
+		type: string
+		isArray: boolean
+		isOptional: boolean
+		isDataEntry: boolean
+		attrs?: string
+		permissions?: string
+	}
 	// no name; it should be part of Models with their name as a key
 	export type Model = {
-		fields: Field[];
-		attrs?: string[];
-	};
-	export type Models = Record<string, Model>;
-	export type SelectedModels = Record<RouteName, Model>;
+		fields: Field[]
+		attrs?: string[]
+		permissions?: string
+	}
+	export type Models = Record<string, Model>
+	export type RouteName = string
+	export type ModelName = string
+	export type SelectedModel = Record<
+		ModelName,
+		{
+			routeName: string
+			permissions?: string
+		}
+	>
+	export type SelectedModels = Record<RouteName, SelectedModel>
+	export type Components = string[]
 	export type Payload = Record<string, SelectedModels | Model | string[] | string>; // { route: string | null } = { route: null };
 
 	// props for creating +page.svelte/+page.server.ts route pager
@@ -27,11 +39,10 @@ declare global {
 	export type TEnum = Record<string, string>;
 	export type TEnums = Record<string, TEnum>;
 	export type Position = { x: number; y: number; color: string } | undefined;
-	export type TStick =
-		| 'left'
-		| 'right'
-		| 'above'
-		| 'below'
+
+	export const CStick = ['above', 'right', 'below', 'left'] as const;
+	// export type TStick = typeof CStick[number];
+	export type TStick = 'above' | 'right' | 'below' | 'left'
 	namespace App {
 		// interface Error {}
 		// interface Locals {

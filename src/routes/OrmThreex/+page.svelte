@@ -777,7 +777,7 @@
 	}
 
 	.cr-left-column {
-		@include container($head: 'Application Settings', $head-color: navy);
+		@include container($caption: 'Application Settings', $caption-color: navy);
 		border: 1px solid gray;
 		border-radius: 8px;
 		height: 54vh;
@@ -793,7 +793,7 @@
 	}
 
 	.cr-middle-column {
-		@include container($head: 'Candidate Fields', $head-color: navy);
+		@include container($caption: 'Candidate Fields', $caption-color: navy);
 		position: relative;
 		border: 1px solid gray;
 		border-radius: 5px;
@@ -878,11 +878,11 @@
 
 	.cr-right-column {
 		position: relative;
-		@include container($head: 'Select UI Fields from ORM', $head-color: navy);
+		@include container($caption: 'Select UI Fields from ORM', $caption-color: navy);
 		background-color: var(--panel-bg-color);
 	}
 	.embellishments {
-		@include container($head: 'Include Components', $head-color: navy);
+		@include container($caption: 'Include Components', $caption-color: navy);
 		background-color: var(--panel-bg-color);
 
 		position: relative;

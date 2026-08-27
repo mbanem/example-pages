@@ -129,7 +129,7 @@
 		margin: 100px 0 0 200px;
 	}
 	.container {
-		@include container($head: 'Database Attributes', $head-color: skyblue);
+		@include container($caption: 'Database Attributes', $caption-color: skyblue);
 		padding: 1rem;
 	}
 

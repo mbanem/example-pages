@@ -1,10 +1,10 @@
 <script lang="ts">
-	import CRRBTooltip from '$lib/components/CRRBTooltip.svelte';
+	// import CRRBTooltip from '$lib/components/CRRBTooltip.svelte';
 	import type { PageProps } from './$types';
 	import FakeExtension from '$lib/components/FakeExtension.svelte';
-	import ShowMessage from '$lib/components/CRShowTooltip.svelte';
+	import Tooltip from '$lib/components/CRShowTooltip.svelte';
 	import { handleTryCatch } from '$lib/utils';
-	let sm: ShowMessage;
+	let tooltip: Tooltip;
 	// type Payload = Record<string, SelectedModels | Model | string[] | string>; // { route: string | null } = { route: null };
 	let { data }: PageProps = $props();
 	let isActive = $state(false);
@@ -223,11 +223,11 @@
 		{/if}
 		{@render pageByPageNote()}
 	</div>
-	<CRRBTooltip {models} bind:selectedModels bind:isLoading {userRoles}></CRRBTooltip>
+	<!-- <CRRBTooltip {models} bind:selectedModels bind:isLoading {userRoles}></CRRBTooltip> -->
 </div>
 
 <!-- no display just a showTooltip utils with markup -->
-<ShowMessage bind:this={sm} />
+<Tooltip bind:this={tooltip} />
 
 <style lang="scss">
 	.spinner-wrapper {
@@ -278,7 +278,7 @@
 		height: 100%;
 	}
 	.cr-left-column {
-		@include container($head: 'Application Settings', $head-color: navy);
+		@include container($caption: 'Application Settings', $caption-color: navy);
 		position: relative;
 		border: 1px solid gray;
 		border-radius: 8px;
@@ -299,7 +299,7 @@
 	}
 
 	.embellishments {
-		@include container($head: 'Include Components', $head-color: navy);
+		@include container($caption: 'Include Components', $caption-color: navy);
 		background-color: var(--panel-bg-color);
 
 		position: relative;
@@ -352,8 +352,8 @@
 	.authentication,
 	.authorization {
 		@include container(
-			$head: 'Authentication',
-			$head-color: navy,
+			$caption: 'Authentication',
+			$caption-color: navy,
 			$padding: 0.5rem 1rem,
 			$left: 1rem,
 			$width: max-content
@@ -364,7 +364,7 @@
 		margin: 0.5rem 0 1rem 0;
 	}
 	.authorization {
-		@include container($head: 'Authorization', $left: 0.5rem);
+		@include container($caption: 'Authorization', $left: 0.5rem);
 		width: 16rem;
 	}
 	.radio-check-groups {

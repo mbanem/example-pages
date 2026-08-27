@@ -350,7 +350,7 @@
 
 <style lang="scss">
 	.page-info {
-		@include container($head: 'What Does This Page Do', $head-color: 'navy', $font-size: 15px, $top: -10px);
+		@include container($caption: 'What Does This Page Do', $caption-color: 'navy', $font-size: 15px, $top: -10px);
 		position: absolute;
 		top: 0.5rem;
 		left: 1rem;
@@ -554,7 +554,7 @@
 			position: absolute;
 			top: 2rem;
 			left: 0;
-			// @include container($head: 'Database Parameters', $head-color: navy);
+			// @include container($caption: 'Database Parameters', $caption-color: navy);
 			margin: 0;
 			padding: 1rem;
 			// z-index: 200;
@@ -603,6 +603,6 @@
 		border-radius: 6px;
 		padding: 0 0.5rem;
 		// z-index: 10;
-		// @include container($head: 'Database and Role Parameters', $head-color: navy);
+		// @include container($caption: 'Database and Role Parameters', $caption-color: navy);
 	}
 </style>

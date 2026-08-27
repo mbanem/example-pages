@@ -1,5 +1,5 @@
 <script module lang="ts">
-	// import { createGlobalEventHandler, type EType } from './grok-event-handler';
+	import { createGlobalEventHandler, type EType } from './grok-event-handler';
 	// Theme type & state
 	let isDark: boolean = $state(false); // Svelte 5 runes syntax
 	export function isDark_() {
@@ -11,7 +11,7 @@
 	let reportClicksEl: HTMLDivElement | null = null;
 	let grid: HTMLDivElement | null = null;
 	const colors = ['violet', 'tomato', 'blue', 'green', 'navy'];
-	// export const globalEH = createGlobalEventHandler();
+	export const globalEH = createGlobalEventHandler();
 	export function toggleColorHandler(e: EType) {
 		const el = e.target as HTMLElement;
 		const style = el.style;
@@ -62,19 +62,20 @@
 	onMount(() => {
 		// console.log('globalEH',globalEH)
 		reportClicksEl = document.querySelector('.report-clicks') as HTMLDivElement;
-		// afterNavigate(() => {
-		// 	// Small delay because DOM may still be updating
-		// 	setTimeout(() => globalEH.setup(document.body), 20);
-		// });
+		afterNavigate(() => {
+			// Small delay because DOM may still be updating
+			setTimeout(() => globalEH.setup(document.body), 20);
+		});
 
-		// return () => {
-		// 	// unsubscribe();
-		// 	globalEH.destroy();
-		// };
+		return () => {
+			// unsubscribe();
+			globalEH.destroy();
+		};
 	});
 
 	// -------- toggle theme begin ---------
 	import { browser } from '$app/environment';
+	import { afterNavigate } from '$app/navigation';
 
 	let mounted = $state(false);
 

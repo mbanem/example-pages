@@ -2,28 +2,29 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	export type TProps = {
 		userRoles: string[];
-		model: string;
+		modelName: string;
+		models: Models;
+		exportModels?: () => void;
 	};
-	// const userRoles = ['USER', 'ADMIN', 'VISITOR', 'MODERATOR'];
-	let { userRoles, model }: TProps = $props();
-	const roles = new SvelteMap<string, SvelteSet<string>>();
+	let { userRoles, modelName, models = $bindable(), exportModels }: TProps = $props();
+	// model holds set of selected roles
+	const rolesMap = new SvelteMap<string, SvelteSet<string>>();
 
 	// when dropdown is opened set the current selectedModel
 	let selectedModel = $state('');
 	let dropdownEl: HTMLDivElement;
 
-	function roleSelected(e: MouseEvent) {
+	function roleSelected(e: MouseEvent, model: string) {
 		e.preventDefault();
-		debugger;
 		const el = e.target as HTMLElement;
-
 		if (!el.classList[0]) {
 			return;
 		}
+		// TODO cannot allow dupplicate roles in the list
 		switch (el.classList[0]) {
 			case 'selectedRoles': {
 				selectedModel = (el.parentElement as HTMLElement)?.dataset.model as string;
-				console.log('switch selectedModel', selectedModel);
+				//// console.log('switch selectedRoles', selectedModel);
 				// in order to position drop down find rect of currently selected role-list
 				// const { x, y } = el.getBoundingClientRect();
 				Object.assign(dropdownEl.style, {
@@ -36,27 +37,23 @@
 			case 'role-list':
 				dropdownEl.classList.toggle('hidden');
 				break;
-			// default: {
-			// 	console.log('default switch on selectedModel');
-			// 	// Svelte cryptic class name
-			// 	const role = el.innerText.match(/(\w+)\s*$/)?.[0];
-			// 	if (role && !el.classList.contains('role-list')) {
-			// 		toggleRole(e, model as string, role);
-			// 	}
-			// }
+			default: {
+				// Svelte cryptic class name
+				const role = el.innerText.match(/(\w+)\s*$/)?.[0];
+				if (role && !el.classList.contains('role-list')) {
+					toggleRole(e, model as string, role);
+				}
+			}
 		}
 	}
 	function toggleRole(e: MouseEvent, model: string, role: string) {
-		debugger;
-		// console.log('toggleRole e.target', e.target);
-		// console.log('toggleRole', model, role, roles);
 		e.preventDefault();
 		//console.log('toggleRole', model, role);
-		let set = roles.get(model);
+		let set = rolesMap.get(model);
 
 		if (!set) {
 			set = new SvelteSet<string>();
-			roles.set(model, set);
+			rolesMap.set(model, set);
 		}
 
 		if (set.has(role)) {
@@ -64,6 +61,8 @@
 		} else {
 			set.add(role);
 		}
+		models[modelName].permissions = [...set].join(' ');
+		exportModels(modelName);
 	}
 	function dismiss(e: MouseEvent) {
 		(e.target as HTMLElement).querySelector('.dropdown')?.classList.add('hidden');
@@ -71,9 +70,14 @@
 </script>
 
 {#snippet multiSelect(model: string)}
-	{@const selected = roles.get(model) ?? new SvelteSet<string>()}
+	{@const selected = rolesMap.get(model) ?? new SvelteSet()}
 
-	<section class="select-wrapper" aria-hidden={true} onclick={roleSelected} onmouseleave={dismiss}>
+	<section
+		class="select-wrapper"
+		aria-hidden={true}
+		onclick={(e: MouseEvent) => roleSelected(e, model)}
+		onmouseleave={dismiss}
+	>
 		<!-- selected roles -->
 		<div class="role-list" aria-hidden={true} data-model={model}>
 			{#if selected.size}
@@ -88,7 +92,6 @@
 		</div>
 	</section>
 {/snippet}
-
 <!-- dropdown -->
 <div
 	bind:this={dropdownEl}
@@ -101,7 +104,7 @@
 	aria-hidden={true}
 >
 	{#each userRoles as role (role)}
-		<p class:selected={roles.get(selectedModel)?.has(role)}>
+		<p class:selected={rolesMap.get(selectedModel)?.has(role)}>
 			<span class="letter">
 				{role[0]}
 			</span>
@@ -109,13 +112,11 @@
 		</p>
 	{/each}
 </div>
-
-{@render multiSelect(model)}
+{@render multiSelect(modelName)}
 
 <style lang="scss">
 	*,
-	*::before,
-	*::after {
+	*::before {
 		box-sizing: border-box;
 	}
 	.select-wrapper {
@@ -125,36 +126,34 @@
 		width: 6rem;
 		margin-left: 2rem;
 		user-select: none;
-
 		.role-list {
 			display: flex;
 			gap: 4px;
 
-			// border: 1px solid lightgray;
 			width: 100%;
 			line-height: 10px;
 			height: 1rem;
-			border-radius: 4px;
 			color: var(--badge-color);
 			background-color: var(--badge-bg-color);
+			border: 1px solid gray;
+			border-radius: 4px;
 			z-index: 20;
 			.badge {
 				display: inline-block;
-				color: var(--badge-color);
-				background-color: var(--badge-bg-color);
 				font-size: 11px;
 				line-height: 16px;
+				color: var(--badge-color);
+				background-color: var(--badge-bg-color);
 				border: 1px solid gray;
 				border-radius: 4px;
 				padding: 0 2px;
+				pointer-events: none;
 			}
 			.selectedRoles {
 				display: inline-block;
 				text-align: center;
 				width: 8rem;
 				cursor: pointer;
-				border: 1px solid gray;
-				border-radius: 6px;
 			}
 		}
 	}
@@ -188,15 +187,14 @@
 			}
 		}
 		.letter {
-			// 	color: var(--candidate-color);
-			// 	background-color: var(--candidate-bg-color);
 			font-size: 11px;
 			border: 1px solid gray;
 			border-radius: 4px;
 			padding: 0 4px;
-			margin-left: 8px;
+			pointer-events: none;
 		}
 	}
+
 	.hidden {
 		display: none;
 	}

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ShowMessage from '$lib/components/CRShowTooltip.svelte';
-	let sm: ShowMessage;
+	import Tooltip from '$lib/components/CRShowTooltip.svelte';
+	let sm: Tooltip;
 	function getVal() {
 		return Math.floor(Math.random() * 300 + 50);
 	}
@@ -62,7 +62,7 @@
 	<p>Fruskogorska 27</p>
 </nav>
 
-<ShowMessage bind:this={sm} />
+<Tooltip bind:this={sm} />
 <div
 	onclick={(e: MouseEvent) =>
 		sm?.showTooltip(e, `Random Position at (x: ${(x = getVal())}, y: ${(y = getVal())})`, {

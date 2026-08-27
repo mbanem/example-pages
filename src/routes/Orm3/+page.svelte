@@ -5,10 +5,23 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { Field, Models, FieldStrips } from './parse-prisma-schema';
 	import { isDark_ } from '../+layout.svelte';
+	import CRModelsHandler from './CRModelsHandler.svelte';
+	import Tooltip from './tooltip';
+
+	let tt: Tooltip;
+	// type Payload = Record<string, SelectedModels | Model | string[] | string>; // { route: string | null } = { route: null };
+	let { data }: PageProps = $props();
+	let isActive = $state(false);
+	let models = data.models; // avoid $derived as we use this one-time only
+	// console.log('data.enums', data.enums); // type TEnums = Record<string, Record<string, string>>;
+	// let isLoading = $state(true);
+	// let userRoles = ['USER', 'ADMIN', 'VISITOR', 'MODERTOR'];
+	let userRoles = Object.keys(Object.values(data.enums)[0] as TEnum).filter(Boolean);
 
 	let uiModels: Models = $state({});
 	let nuiModels: Models = $state({});
 	let fieldStrips: FieldStrips = $state({});
+	// let userRoles = $state(['USER', 'ADMIN', 'MoDERATOR', 'VISITOR']);
 
 	let modelName = '';
 
@@ -26,6 +39,8 @@
 	let removeHintEl: HTMLParagraphElement;
 	let schemaContainerEl: HTMLDivElement;
 	let middleColumnEl: HTMLDivElement;
+	let selectedModels = $state<SelectedModels>({});
+	let isLoading = $state(false);
 
 	let routeLabelNode: HTMLElement;
 	let routeLabelEl: HTMLLabelElement;
@@ -41,7 +56,7 @@
 	let deletedFields = new SvelteMap<string, Node>();
 	// global msg set by isFieldFormatValid, isInFieldStrips and isInListEls
 	let msg = '';
-	let models: Models = {};
+	// let models: Models = {};
 
 	// schema = ''; TODO in Webview component get read from this file content
 
@@ -54,7 +69,7 @@
 		models[modelName] = { fields: [], attrs: [] };
 		models[modelName].fields = model.fields;
 	}
-	for (const [modelName, model] of Object.entries(models)) {
+	for (const [modelName, model] of Object.entries(models) as [string, Model][]) {
 		model.fields = [...model.fields, ...nuiModels[modelName].fields];
 		model.attrs = nuiModels[modelName].attrs;
 	}
@@ -501,6 +516,7 @@
 		});
 	</script>
 </svelte:head>
+<CRModelsHandler {models} bind:selectedModels bind:isLoading {userRoles}></CRModelsHandler>
 <div id="crudUIBlockId" class="cr-main-grid">
 	<div class="cr-grid-wrapper">
 		<cr-pre class="cr-span-two">
@@ -592,7 +608,7 @@
 	}
 
 	.cr-left-column {
-		@include container($head: 'Application Settings', $head-color: navy);
+		@include container($caption: 'Application Settings', $caption-color: navy);
 		border: 1px solid gray;
 		border-radius: 8px;
 		height: 54vh;
@@ -608,7 +624,7 @@
 	}
 
 	.cr-middle-column {
-		@include container($head: 'Candidate Fields', $head-color: navy);
+		@include container($caption: 'Candidate Fields', $caption-color: navy);
 		position: relative;
 		border: 1px solid gray;
 		border-radius: 5px;
@@ -675,12 +691,12 @@
 
 	.cr-right-column {
 		position: relative;
-		@include container($head: 'Select UI Fields from ORM', $head-color: navy);
+		@include container($caption: 'Select UI Fields from ORM', $caption-color: navy);
 		background-color: var(--panel-bg-color);
 		height: 88vh;
 	}
 	.embellishments {
-		@include container($head: 'Include Components', $head-color: navy);
+		@include container($caption: 'Include Components', $caption-color: navy);
 		background-color: var(--panel-bg-color);
 
 		position: relative;

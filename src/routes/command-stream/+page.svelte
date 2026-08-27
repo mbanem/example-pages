@@ -25,7 +25,7 @@
 
 <style lang="scss">
 	.cr-left-column {
-		@include container($head: 'Application Settings', $head-color: navy);
+		@include container($caption: 'Application Settings', $caption-color: navy);
 		position: relative;
 		border: 1px solid gray;
 		border-radius: 8px;

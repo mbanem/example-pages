@@ -1,5 +1,7 @@
 :global(:root) {
   --attr-id: #008000;
+  --badge-color: #000080;
+  --badge-bg-color: #f0f8ff;
   --bg: #f8f9fa;
   --border-color: #d3d3d3;
   --btn-bg: #121212;
@@ -14,6 +16,8 @@
   --close-all-bg-hover: #87ceeb;
   --checkbox-label-color: #000080;
   --drag-color: #0000ff;
+  --drop-color: red;
+  --drop-bg-color: cornsilk;
   --field-name: #1a1a6c;
   --field-type-color: #000080;
   --green-type: green;
@@ -38,7 +42,8 @@
 
 :global(.dark) {
   --attr-id: #90ee90;
-  --bg: #121212;
+  --badge-color: navy;
+  --badge-bg-color: #f0f8ff;
   --border-color: #525252;
   --btn-bg: #f8f9fa;
   --btn-text: #f8f9fa;
@@ -52,6 +57,8 @@
   --close-all-bg-hover: #656565;
   --checkbox-label-color: #87ceeb;
   --drag-color: navy;
+  --drop-color: lightgreen;
+  --drop-bg-color: #323232;
   --field-name: rgb(84, 84, 230);
   --field-type-color: #87ceeb;
   --green-type: lightgreen;

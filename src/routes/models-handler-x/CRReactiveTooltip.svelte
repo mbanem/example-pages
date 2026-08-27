@@ -2,25 +2,27 @@
 	import { tick } from 'svelte';
 
 	type TStick = 'left' | 'right' | 'above' | 'below';
-	type TPos = { x: number; y: number };
-	type THovered = MouseEvent | HTMLElement | TPos;
+	type TPosition = { x: number; y: number };
+	type THovered = MouseEvent | HTMLElement | TPosition;
 
 	// Svelte 5 State Trackers
 	let tooltipEl = $state<HTMLElement | undefined>(undefined);
-	let anchorRect = $state<DOMRect | TPos | undefined>(undefined);
+	let anchorRect = $state<DOMRect | TPosition | undefined>(undefined);
 	let preferredStick = $state<TStick>('above');
 	let userStyles = $state<Record<string, string>>({});
 	let timeout = $state(3000);
+	let onClose: (() => void) | undefined;
 
 	export function isTooltipActive() {
 		return tooltipEl !== undefined;
 	}
 
-	async function fadeOutAndRemove(el: HTMLElement) {
-		el.style.opacity = '0';
+	async function fadeOutAndRemove() {
+		if (!tooltipEl) return;
+		tooltipEl.style.opacity = '0';
 		await new Promise((resolve) => setTimeout(resolve, 300));
 		await tick();
-		el.remove();
+		tooltipEl.remove();
 		await tick();
 		tooltipEl = undefined;
 		anchorRect = undefined; // Reset tracking
@@ -55,7 +57,7 @@
 				let testX = rect.left;
 				let testY = rect.top;
 				let fits = false;
-				const buttonGap = timeout === 0 ? 16 : 16;
+
 				switch (dir) {
 					case 'right':
 						testX = rect.right + gap;
@@ -63,9 +65,9 @@
 						fits = viewportWidth - rect.right >= tooltipRect.width + gap;
 						break;
 					case 'left':
-						testX = rect.left - tooltipRect.width - gap - 2 * buttonGap;
+						testX = rect.left - tooltipRect.width - gap;
 						testY = rect.top;
-						fits = rect.left >= tooltipRect.width + gap + 2 * buttonGap;
+						fits = rect.left >= tooltipRect.width + gap;
 						break;
 					case 'below':
 						testX = rect.left + rect.width / 2 - tooltipRect.width / 2;
@@ -74,8 +76,8 @@
 						break;
 					case 'above':
 						testX = rect.left + rect.width / 2 - tooltipRect.width / 2;
-						testY = rect.top - tooltipRect.height - gap - buttonGap;
-						fits = rect.top >= tooltipRect.height + gap + buttonGap;
+						testY = rect.top - tooltipRect.height - gap;
+						fits = rect.top >= tooltipRect.height + gap;
 						break;
 				}
 
@@ -108,7 +110,7 @@
 			fontFamily: 'system-ui, sans-serif',
 			fontSize: '14px',
 			width: 'auto',
-			padding: timeout === 0 ? '12px 26px 8px 12px' : '12px 12px 8px 12px',
+			padding: timeout === 0 ? '12px 32px 8px 12px;' : '12px 12px 8px 12px;',
 			// CRITICAL: Added left/top transitions for smooth tracking movement
 			transition: 'opacity 0.3s ease, left 0.2s cubic-bezier(0.25, 1, 0.5, 1), top 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
 			...userStyles,
@@ -121,12 +123,9 @@
 		if (!tooltipEl || !anchorRect) return;
 
 		const handleScroll = () => {
-			// If our anchor is a real DOM Element, we must fetch its fresh bounding values on scroll
 			if (anchorRect && 'left' in anchorRect && !(anchorRect instanceof MouseEvent)) {
-				// We search the DOM for the active element to pull its updated relative coordinates
-				const activeEl = document.querySelector('.dynamic-tooltip-anchor');
-				if (activeEl) {
-					anchorRect = activeEl.getBoundingClientRect();
+				if (tooltipEl) {
+					anchorRect = tooltipEl.getBoundingClientRect();
 				}
 			}
 			updatePosition();
@@ -143,55 +142,60 @@
 		};
 	});
 
+	// -------------------- SHOW TOOLTIP --------------------------------------
+	/*
+		anchor is an HTML element that tooltip should be position arround it
+		tooltip is an HTML markup or a CSV string to render <p> from rows
+		whentimeout is zero a ❌ is added with onclick listener to hide tooltip
+		when callbackOnClose is specified it calls parent to notify of hiding tooltip
+
+	 */
 	export async function showTooltip(
 		anchor: THovered,
 		tooltip: HTMLElement | string,
 		timeout_: number = 3000,
 		stick: TStick = 'above',
-		customStyles: Record<string, string> = {}
+		customStyles: Record<string, string> = {},
+		callbackOnClose?: () => void
 	) {
 		try {
+			onClose = callbackOnClose;
+
 			timeout = timeout_;
 			if (tooltipEl !== undefined) return;
 
-			// Store configurations into reactive state blocks
 			preferredStick = stick;
 			userStyles = customStyles;
 
 			if (typeof tooltip === 'string') {
 				tooltipEl = document.createElement('div');
-				tooltipEl.className = 'dynamic-tooltip';
 				tooltipEl.innerHTML = tooltip
-					.split(',')
+					.split(/,|\n/)
 					.map((part) => part.trim())
 					.filter(Boolean)
 					.map((part) => `<p style="margin:0;padding:0;line-height:1.4">${part}</p>`)
 					.join('');
+				tooltipEl.classList.add('dynamic-tooltip');
 			} else {
 				tooltipEl = tooltip;
 			}
+			tooltipEl.classList.add('dynamic-tooltip');
 
 			Object.assign(tooltipEl.style, {
 				position: 'fixed',
 				opacity: '0',
 			});
 
-			// Resolve & tag the anchor element so the scroll listener can track it
 			if (anchor instanceof HTMLElement) {
-				anchor.classList.add('dynamic-tooltip-anchor');
 				anchorRect = anchor.getBoundingClientRect();
 			} else if (anchor && 'clientX' in anchor) {
-				// if (stick === 'above') {
-				// 	anchorRect = { x: anchor.clientX, y: anchor.clientY };
-				// } else {
 				const el = document.elementFromPoint(anchor.clientX, anchor.clientY) as HTMLElement;
 				if (el) {
-					el.classList.add('dynamic-tooltip-anchor');
 					anchorRect = el.getBoundingClientRect();
 					// }
 				}
 			} else {
-				anchorRect = anchor as TPos;
+				anchorRect = anchor as TPosition;
 			}
 
 			if (timeout === 0) {
@@ -201,23 +205,19 @@
 				Object.assign(closeBtn.style, {
 					position: 'absolute',
 					bottom: '10px',
-					right: '5px',
+					right: '2px',
 					background: 'transparent',
 					border: 'none',
 					cursor: 'pointer',
-					fontSize: '13px',
-					padding: '0',
+					fontSize: '14px',
 					lineHeight: '1',
 					opacity: '0.7',
 				});
-
 				closeBtn.onclick = (e: MouseEvent) => {
 					e.stopPropagation();
-					// Cleanup our temporary anchor tag class on close
-					document.querySelector('.dynamic-tooltip-anchor')?.classList.remove('dynamic-tooltip-anchor');
-					if (tooltipEl) fadeOutAndRemove(tooltipEl);
+					if (tooltipEl) hideTooltip();
 				};
-				tooltipEl.offsetHeight;
+				tooltipEl.style.paddingRight = '26px';
 				tooltipEl.appendChild(closeBtn);
 			}
 
@@ -231,8 +231,10 @@
 
 			if (timeout > 0) {
 				setTimeout(() => {
-					document.querySelector('.dynamic-tooltip-anchor')?.classList.remove('dynamic-tooltip-anchor');
-					if (tooltipEl) fadeOutAndRemove(tooltipEl);
+					// document.querySelector('.dynamic-tooltip')?.classList.remove('dynamic-tooltip');
+					if (tooltipEl) {
+						hideTooltip();
+					}
 				}, timeout);
 			}
 
@@ -241,14 +243,20 @@
 			console.error('showTooltip failed:', err);
 		}
 	}
+
+	export async function hideTooltip() {
+		onClose?.();
+		await fadeOutAndRemove();
+	}
 </script>
 
 <style lang="scss">
 	:global(.dynamic-tooltip) {
+		padding: 0.5rem 1rem;
 		width: max-content;
-		/*p{
-			padding:0;
-			margin:0;
-		}*/
+		p {
+			padding: 0.5rem 0 0 1rem;
+			margin: 0;
+		}
 	}
 </style>
