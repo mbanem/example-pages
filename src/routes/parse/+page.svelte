@@ -49,10 +49,10 @@
 				if (modelName === 'User') {
 					includeTypes += 'Role, ';
 				}
-				const [, fields] = Object.entries(theFields)[0];
+				const [, fields] = Object.entries(theFields)[0] as [string, Record<string, FieldInfo>];
 				let m = '';
 
-				for (const [fieldName, { type, prismaAttrs }] of Object.entries(fields)) {
+				for (const [fieldName, { type, prismaAttrs }] of Object.entries(fields as Record<string, FieldInfo>)) {
 					if ('0|1'.includes(fieldName)) continue;
 					types += `${fieldName}: ${dateTimeToDate(type)};
     `;

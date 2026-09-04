@@ -11,6 +11,6 @@ export const load: PageServerLoad = async () => {
 
 	// const strModels = JSON.stringify({ uiModels, nuiModels, fieldStrips })
 	// Return the data as an object
-	// console.log(enums);
+	// console.log(models);
 	return { models, enums };
 };

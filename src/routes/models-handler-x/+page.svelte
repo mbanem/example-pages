@@ -13,7 +13,7 @@
 	//   isActive = isActive ? false : true
 	// }
 	// pageInfo = handlePageInfo as TCallbackFunc
-	console.log('[OrmThree] entry point');
+	// console.log('[OrmThree] entry point');
 	let { data }: PageProps = $props();
 	// let isActive = $state(false);
 	let models = $state(data.models); // avoid $derived as we use this one-time only
@@ -26,39 +26,39 @@
 		isLoading = false;
 	}, 1000);
 
-	// let videoUris = $state<Record<string, string>>({});
-	// let videoName = $state('');
-	// let dialogEl = $state<HTMLDialogElement | null>(null);
-	// async function setVideoName(name: string) {
-	// 	console.log('[OrmThree] videoUris[videoName]', videoUris[videoName]);
-	// 	console.log('[OrmThree] setVideoName', name, dialogEl);
-	// 	videoName = `${name}Video`;
-	// 	// Wait for Svelte 5 to update the DOM reactive markup based on the new videoName
-	// 	await tick();
-	// 	// Open modal once video name is set
-	// 	dialogEl?.showModal();
-	// }
-	// function closeModal() {
-	// 	dialogEl?.close();
-	// 	videoName = '';
-	// }
-	// function handleDialogClick(e: MouseEvent) {
-	// 	if (!dialogEl) {
-	// 		console.log('[OrmThree] handleDialogClick no dialogEL');
-	// 		return;
-	// 	}
+	let videoUris = $state<Record<string, string>>({});
+	let videoName = $state('');
+	let dialogEl = $state<HTMLDialogElement | null>(null);
+	async function setVideoName(name: string) {
+		console.log('[OrmThree] videoUris[videoName]', videoUris[videoName]);
+		console.log('[OrmThree] setVideoName', name, dialogEl);
+		videoName = `${name}Video`;
+		// Wait for Svelte 5 to update the DOM reactive markup based on the new videoName
+		await tick();
+		// Open modal once video name is set
+		dialogEl?.showModal();
+	}
+	function closeModal() {
+		dialogEl?.close();
+		videoName = '';
+	}
+	function handleDialogClick(e: MouseEvent) {
+		if (!dialogEl) {
+			console.log('[OrmThree] handleDialogClick no dialogEL');
+			return;
+		}
 
-	// 	// Get the inner bounding rectangle of the dialog
-	// 	const rect = dialogEl.getBoundingClientRect();
+		// Get the inner bounding rectangle of the dialog
+		const rect = dialogEl.getBoundingClientRect();
 
-	// 	// Check if the click occurred OUTSIDE the dialog's visible boundaries (on the backdrop)
-	// 	const isOutside =
-	// 		e.clientX < rect.left || e.clientX > rect.right + 50 || e.clientY < rect.top || e.clientY > rect.bottom + 50;
+		// Check if the click occurred OUTSIDE the dialog's visible boundaries (on the backdrop)
+		const isOutside =
+			e.clientX < rect.left || e.clientX > rect.right + 50 || e.clientY < rect.top || e.clientY > rect.bottom + 50;
 
-	// 	if (isOutside) {
-	// 		closeModal();
-	// 	}
-	// }
+		if (isOutside) {
+			closeModal();
+		}
+	}
 
 	let appName = $state('');
 	// const vscode = acquireVsCodeApi()
@@ -123,7 +123,7 @@
 
 	onMount(() => {
 		try {
-			console.log('[OrmThree] postMessage "ready" to extension');
+			// console.log('[OrmThree] postMessage "ready" to extension');
 			// vscode.postMessage({
 			// 	command: 'ready',
 			// 	payload: 'wait for sendingModels from extension',
@@ -173,7 +173,7 @@
 	<title>CRUD Support</title>
 </svelte:head>
 <pre>models {Object.keys(models).join(', ')} selectedModels {Object.keys(selectedModels).join(', ')}</pre>
-<!-- <dialog
+<dialog
 	bind:this={dialogEl}
 	onclick={handleDialogClick}
 	onclose={() => {
@@ -192,7 +192,7 @@
 	{:else}
 		{console.log('[OrmThree] no videoUris[videoName]')}
 	{/if}
-</dialog> -->
+</dialog>
 
 <!-- {#snippet pagePurpose()}
 	<pre>
@@ -275,9 +275,9 @@
 						{comp} component
 					</label>
 				</div>
-				<!-- <p onclick={() => setVideoName(comp)} onkeyup={() => setVideoName(comp)} aria-hidden={true}>
+				<p onclick={() => setVideoName(comp)} onkeyup={() => setVideoName(comp)} aria-hidden={true}>
 					show {comp} in action
-				</p> -->
+				</p>
 			{/each}
 		</div>
 		<div class="buttons-row">

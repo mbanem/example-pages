@@ -37,7 +37,6 @@ let installPartTwoPending = false;
 let pm = 'unknown';
 let ex = 'unknown';
 
-/
 // Remove 'export type', newlines, and curly braces.
 // Deliberately keep the semicolons to help split fields later.
 const cleanedString = lowerCaseTypes
