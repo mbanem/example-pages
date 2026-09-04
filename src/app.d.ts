@@ -42,7 +42,9 @@ declare global {
 
 	export const CStick = ['above', 'right', 'below', 'left'] as const;
 	// export type TStick = typeof CStick[number];
-	export type TStick = 'above' | 'right' | 'below' | 'left'
+	export type TStick = 'left' | 'right' | 'above' | 'below';
+	export type TPos = { x: number; y: number };
+	export type THovered = MouseEvent | HTMLElement | TPos;
 	namespace App {
 		// interface Error {}
 		// interface Locals {

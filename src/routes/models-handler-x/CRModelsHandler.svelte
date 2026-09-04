@@ -104,35 +104,43 @@
 	}
 
 	function getUIField(fieldName: string) {
-		if (/password/i.test(fieldName)) {
-			return {
-				name: 'password',
-				isDataEntry: true,
-				isOptional: false,
-				isArray: false,
-				attrs: 'saved excrypted',
-			} as Field;
-		}
 		const fld = models[modelName]?.fields.find((field) => field.name === fieldName) as Field;
 		console.log('inside getUIField', modelName, fieldName, fld);
 		return fld;
 	}
 
 	// called from tooltipBlockEl tooltip when radio button fires change event
+	// let passwords = 0;
 	async function addFieldToModel(e: Event) {
+		// if (passwords > 0) {
+		// 	passwords = 0;
+		// 	return;
+		// }
+		// if (extraModels.has(modelName)) {
+		// 	e.preventDefault();
+		// }
 		console.log('addFieldToModel entry point');
 		try {
 			// killTimeout();
 			if (!hoveredEl || !tooltipBlockEl) {
-				console.log('no hoveredEl or tooltipBlockEl');
+				// console.log('no hoveredEl or tooltipBlockEl');
 				return;
 			}
 			await tick();
 			if (!selectedModel) {
-				console.log('No radio button selected');
+				// console.log('No radio button selected');
 				return;
 			}
+
 			const fieldName = hoveredEl?.innerText as string;
+			// if (extraModels.has(modelName)) {
+			// 	// console.log('extraModels has ', modelName);
+			// 	if (models[modelName] && (models[modelName] as Model).fields) {
+			// 		models[modelName]!.fields = models[modelName]?.fields.filter((f) => f.name !== fieldName) as Field[];
+			// 		extraModels.delete(modelName);
+			// 	}
+			// 	return;
+			// }
 
 			// if (!(selectedModel === includeAll || extraModels.has(selectedModel))) {
 			// 	console.log('addFieldToModel already included in some of models');
@@ -140,6 +148,19 @@
 			// }
 			const field = getUIField(fieldName);
 			if (field) {
+				// if (field.name === 'password' && passwords > 0) {
+				// 	if (passwords > 0) {
+				// 		(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
+				// 		passwords = 0;
+				// 		return;
+				// 	}
+				// 	console.log('password again');
+				// 	passwords = 0;
+				// 	return;
+				// }
+				if (/password/i.test(field.name)) {
+					field.name = 'password';
+				}
 				if (selectedModel === includeAll) {
 					for (const m of extraModels) {
 						if (!models[m]?.fields.includes(field)) {
@@ -148,18 +169,19 @@
 					}
 				} else {
 					if (!models[selectedModel]?.fields.includes(field)) {
+						console.log('push field', selectedModel, field, models[selectedModel]?.fields);
 						models[selectedModel]?.fields.push(field);
 					}
 				}
 			}
 			// after adding the field to a model clear selected
 			// radio button and hide the radio button tooltip
-			(e.target as HTMLInputElement).checked = false;
+			// (e.target as HTMLInputElement).checked = false;
 			(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
 			console.log('exit addFieldToModel extraModels', extraModels);
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
-			console.log('addFieldToModel', msg);
+			console.log('catch/addFieldToModel', msg);
 		}
 		if (anySelected()) {
 			exportModels();
@@ -184,24 +206,33 @@
 			return;
 		}
 
-		const { x, y } = el.getBoundingClientRect();
-		hoveredEl = (e.target as HTMLElement).firstElementChild as HTMLElement;
-		Object.assign((tooltipBlockEl as HTMLDivElement).style, {
-			position: 'fixed',
-			top: `${y - 8}px`,
-			left: `${x}px`,
-			zIndex: '9999',
-			pointerEvents: 'auto',
-			opacity: '1',
-			cursor: 'pointer',
-		});
+		let { x, y } = el.getBoundingClientRect();
+		if (extraModels.has(modelName)) {
+			x = x + 60;
+			tooltip.showTooltip({ x, y }, 'click to remove', 1000, 'above', {
+				color: 'crimson',
+				backgroundColor: '#fff0f0',
+				border: '1px solid crimson',
+			});
+		} else {
+			hoveredEl = (e.target as HTMLElement).firstElementChild as HTMLElement;
+			Object.assign((tooltipBlockEl as HTMLDivElement).style, {
+				position: 'fixed',
+				top: `${y - 8}px`,
+				left: `${x}px`,
+				zIndex: '9999',
+				pointerEvents: 'auto',
+				opacity: '1',
+				cursor: 'pointer',
+			});
+		}
 	}
 
 	function toggleListeners(addOrRemove: boolean) {
 		if (!lastHoveredDetails) {
 			return;
 		}
-		console.log('toggleListeners', addOrRemove);
+		// console.log('toggleListeners', addOrRemove);
 		// lastHoveredDetails is set before calling this function
 		const sections = (lastHoveredDetails as HTMLDetailsElement).querySelectorAll<HTMLElement>('section');
 
@@ -223,7 +254,7 @@
 		}
 		// mouse is hovering over the frid, but if out of the first column
 		// hide the copy field tooltip
-		if (extraModelsSize && fieldsRect && !isInside(e)) {
+		if (fieldsRect && !isInside(e)) {
 			(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
 			return;
 		}
@@ -290,8 +321,9 @@
 		// e.preventDefault();	// will not toggle open/close if prevented
 		const el = e.target as HTMLElement;
 		const det = el.parentElement as HTMLDetailsElement;
-		console.log('toggleSummary det?', det.innerText);
+		// console.log('toggleSummary det?', det.innerText);
 		await tick(); // give DOM time to toggle open/close state
+		let fldName = '';
 		// modelName = el.tagName
 		switch (el.tagName) {
 			case 'SUMMARY':
@@ -307,7 +339,7 @@
 					(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
 				}
 				await tick();
-				console.log('toggleSummary modelName set', modelName);
+				// console.log('toggleSummary modelName set', modelName);
 
 				if (extraModels.has(modelName)) {
 					// <div holding all <sections with fieldNames with data-entry and data-extra boolean flags
@@ -330,11 +362,15 @@
 					exportModels();
 				}
 				break;
+			case 'SECTION':
+				console.log('SECTION', el.innerText, modelName);
+				fldName = el.innerText;
+				models[modelName]!.fields = models[modelName]?.fields.filter((field) => field.name !== fldName) as Field[];
+				break;
 			case 'SPAN':
 			case 'P':
 			default:
 				console.log('[OrmThree] toggleSummary defauls case', el.tagName);
-				break;
 		}
 	}
 	// function hideTooltipBlock() {
@@ -361,7 +397,7 @@
 			(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
 		}
 
-		console.log('[OrmThree] addNewModel', newModelNameCap);
+		// console.log('[OrmThree] addNewModel', newModelNameCap);
 		if (models[newModelNameCap]) {
 			showInputMessage(alreadyDefined);
 			return;
@@ -468,7 +504,7 @@
 
 	// TODO remove  this it is for testing
 	async function addExtraModels() {
-		const modelNames = ['login', 'admin', 'customer'];
+		const modelNames = ['login', 'admin', 'customer', 'login'];
 		for (const model of modelNames) {
 			// console.log('[OrmThree] addExtraModels', model);
 			newModelName = model;
@@ -483,18 +519,14 @@
 		// (tooltipBlockEl as HTMLDivElement).addEventListener('mouseleave', hideTooltipBlock);
 
 		setTimeout(() => {
-			console.log('[OrmThree] CRModelHandler timeout add extra models');
+			// console.log('[OrmThree] CRModelHandler timeout add extra models');
 			addExtraModels();
-		}, 2000);
+		}, 500);
 
 		// return () => {
 		// 	(tooltipBlockEl as HTMLDivElement).removeEventListener('mouseleave', hideTooltipBlock);
 		// };
 	});
-	function showCopyFiledTooltip(e: MouseEvent) {
-		const el = e.target as HTMLElement;
-		// console.log('[OrmThree] CRModelsHandler showCopyFiledTooltip', el.tagName, el.innerText);
-	}
 </script>
 
 {#snippet tooltipBlock()}
