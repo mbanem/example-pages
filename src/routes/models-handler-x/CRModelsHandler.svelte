@@ -49,8 +49,7 @@
 	let hoveredEl: HTMLElement | null = null;
 
 	let tooltipMessage = $state('not data entry field');
-	const notDataEntry = 'not data entry field';
-	const clickToRemove = 'click to remove';
+	// const clickToRemove = 'click to remove';
 	let fieldsRect = $state<DOMRect | undefined>(undefined);
 	const defaultMessage = 'Add/Remove extra model like Login, Admin,...';
 	const alreadyDefined = 'Module is already registered';
@@ -59,11 +58,9 @@
 	let modelName = $state('');
 	let message = $state(defaultMessage);
 	let messageColor = $derived(message === defaultMessage ? '' : 'color:tomato;');
-	let busy = $state(false);
-	let timer: ReturnType<typeof setTimeout> | null = null;
+	// let timer: ReturnType<typeof setTimeout> | null = null;
 	const nuiRegex = new RegExp(`\\b@id|@defaults|@updatedAt|@unique\\b`, 'g');
 
-	// export const exportModels = (modelName: string) => {
 	export const exportModels = async () => {
 		selectedModels = {};
 		await tick();
@@ -78,32 +75,13 @@
 				};
 			}
 		}
-		// get only selected models based on the checkbox checked state
-		// for (const modelName of cbGroup) {
-		// 	try {
-		// 		const routeName = (document.getElementById(`route${modelName}`) as HTMLInputElement).value as string;
-
-		// 		// const modelName = (chkbox as HTMLInputElement).value as string;
-		// 		const permissions = models[modelName]?.permissions as string;
-		// 		if (!selectedModels[routeName]) {
-		// 			selectedModels[routeName] = {};
-		// 			(selectedModels[routeName] as SelectedModel)[modelName] = {
-		// 				routeName,
-		// 				permissions,
-		// 			};
-		// 		}
-		// 	} catch (err: unknown) {
-		// 		const msg = err instanceof Error ? err.message : String(err);
-		// 		console.log(msg);
-		// 	}
-		// }
 	};
-	function killTimeout() {
-		if (timer) {
-			clearTimeout(timer);
-			timer = null;
-		}
-	}
+	// function killTimeout() {
+	// 	if (timer) {
+	// 		clearTimeout(timer);
+	// 		timer = null;
+	// 	}
+	// }
 	function fieldAttrsClass(field: Field) {
 		return nuiRegex.test(field.attrs as string) ? 'attr-id' : '';
 	}
@@ -113,7 +91,6 @@
 	function toggleSelectAllModels(e: MouseEvent) {
 		const el = e.target as HTMLParagraphElement;
 		const newState = el.innerText.includes('select all') ? true : false;
-		// console.log('toggleSelectAllModels', newState)
 		cbGroup = [];
 		if (newState) {
 			for (const modelName of Object.keys(models)) {
@@ -121,10 +98,6 @@
 			}
 		}
 		el.innerText = newState ? '(clear all)' : '(select all)';
-		// (document.querySelectorAll('.model-checkboxes') as unknown as Array<HTMLInputElement>).forEach(async (chkbox) => {
-		// 	chkbox.checked = newState;
-		// 	await tick();
-		// });
 		setTimeout(() => {
 			exportModels();
 		}, 400);
@@ -159,24 +132,18 @@
 				console.log('No radio button selected');
 				return;
 			}
-			// console.log('selectedModel', selectedModel);
 			const fieldName = hoveredEl?.innerText as string;
 
-			// console.log('fieldName , selected what?', fieldName, selectedModel);
-			if (!(selectedModel === includeAll || extraModels.has(selectedModel))) {
-				console.log('addFieldToModel already included in some of models');
-				return;
-			}
+			// if (!(selectedModel === includeAll || extraModels.has(selectedModel))) {
+			// 	console.log('addFieldToModel already included in some of models');
+			// 	return;
+			// }
 			const field = getUIField(fieldName);
-			// console.log('getUIField returned for', fieldName, field.name);
 			if (field) {
 				if (selectedModel === includeAll) {
-					console.log('models', models); // OK
 					for (const m of extraModels) {
-						console.log('to add to model', m);
 						if (!models[m]?.fields.includes(field)) {
 							models[m]?.fields.push(field);
-							console.log('added to model', m);
 						}
 					}
 				} else {
@@ -200,56 +167,25 @@
 	}
 
 	function isInside(e: MouseEvent) {
-		// if ((tooltipBlockEl as HTMLDivElement).style.opacity === '1') {
-		// 	return true;
-		// }
 		return e.clientX >= (fieldsRect as DOMRect).left && e.clientX <= (fieldsRect as DOMRect).right;
-	}
-
-	function showNoDataEntry(x: number, y: number) {
-		killTimeout();
-		hoveredEl = null;
-		(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
-		Object.assign(notDataEntryEl.style, {
-			position: 'fixed',
-			top: `${y - 15}px`,
-			left: `${x}px`,
-			zIndex: '9999',
-			pointerEvents: 'auto',
-			opacity: '1',
-		});
 	}
 
 	function showCopyFieldTooltip(e: MouseEvent) {
 		e.preventDefault();
-		killTimeout();
-		timer = null;
-		// console.log('[OrmThree] showCopyFieldTooltip', e);
+		// killTimeout();
+		// timer = null;
 		if (!extraModelsSize) {
 			return;
 		}
 		(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
+		const el = e.target as HTMLElement;
+		const dataset = (e.target as HTMLElement).dataset;
+		if (dataset.entry === 'false' && !/password/i.test(el.innerText)) {
+			return;
+		}
 
-		// there are extra data models for radio-button block to offer copy field
-		// const dataset = (e.target as HTMLElement).dataset;
-		const { x, y } = (e.target as HTMLElement).getBoundingClientRect();
-
-		// not a data entry field so no radio-block but info no-dataa-entry
-		// or remove field if extraModel field is hovered
-		// if (dataset.entry === 'false' || dataset.extra === 'true') {
-		// 	if (dataset.entry === 'false') {
-		// 		tooltipMessage = notDataEntry;
-		// 	} else {
-		// 		tooltipMessage = clickToRemove;
-		// 	}
-		// 	showNoDataEntry(x, y);
-		// 	return;
-		// }
+		const { x, y } = el.getBoundingClientRect();
 		hoveredEl = (e.target as HTMLElement).firstElementChild as HTMLElement;
-		timer = setTimeout(() => {
-			busy = false;
-		}, 100);
-		busy = true;
 		Object.assign((tooltipBlockEl as HTMLDivElement).style, {
 			position: 'fixed',
 			top: `${y - 8}px`,
@@ -259,13 +195,6 @@
 			opacity: '1',
 			cursor: 'pointer',
 		});
-		// } else {
-		// 	if (busy) {
-		// 		return;
-		// 	}
-		// 	tooltipBlockEl.style.opacity = '0';
-		// 	notDataEntryEl.style.opacity = '0';
-		// }
 	}
 
 	function toggleListeners(addOrRemove: boolean) {
@@ -279,12 +208,7 @@
 		// Pick the method name based on the boolean flag
 		const method: 'addEventListener' | 'removeEventListener' = addOrRemove ? 'addEventListener' : 'removeEventListener';
 
-		// const handleMouseEnter = (e) => {
-		//   // Your handler logic
-		// };
-
 		sections.forEach((section) => {
-			// section[method]('mouseenter', handleMouseEnter as EventListener);
 			section[method]('mouseenter', showCopyFieldTooltip as EventListener);
 		});
 	}
@@ -319,8 +243,6 @@
 		if (details) {
 			if (details.open && details !== lastHoveredDetails) {
 				lastHoveredDetails = details;
-				// console.log('Entered open details block:', details);
-				// showCopyFieldTooltip(e);
 				toggleListeners(true);
 			}
 		} else {
@@ -415,9 +337,9 @@
 				break;
 		}
 	}
-	function hideTooltipBlock() {
-		killTimeout();
-	}
+	// function hideTooltipBlock() {
+	// 	killTimeout();
+	// }
 
 	function showInputMessage(
 		msg: string,
