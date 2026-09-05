@@ -24,7 +24,7 @@
 	}: TProps = $props();
 
 	let cbGroup = $state<string[]>([]);
-	let selectedModel = $state('');
+	let rbGroup = $state('');
 	let details = $state<HTMLDetailsElement[]>([]);
 	let lastHoveredDetails = $state<HTMLDetailsElement | null>(null);
 	// const modelsCopy: Models = structuredClone(models);
@@ -76,12 +76,6 @@
 			}
 		}
 	};
-	// function killTimeout() {
-	// 	if (timer) {
-	// 		clearTimeout(timer);
-	// 		timer = null;
-	// 	}
-	// }
 	function fieldAttrsClass(field: Field) {
 		return nuiRegex.test(field.attrs as string) ? 'attr-id' : '';
 	}
@@ -105,80 +99,45 @@
 
 	function getUIField(fieldName: string) {
 		const fld = models[modelName]?.fields.find((field) => field.name === fieldName) as Field;
-		console.log('inside getUIField', modelName, fieldName, fld);
 		return fld;
 	}
 
 	// called from tooltipBlockEl tooltip when radio button fires change event
-	// let passwords = 0;
 	async function addFieldToModel(e: Event) {
-		// if (passwords > 0) {
-		// 	passwords = 0;
-		// 	return;
-		// }
-		// if (extraModels.has(modelName)) {
-		// 	e.preventDefault();
-		// }
 		console.log('addFieldToModel entry point');
 		try {
 			// killTimeout();
 			if (!hoveredEl || !tooltipBlockEl) {
-				// console.log('no hoveredEl or tooltipBlockEl');
 				return;
 			}
 			await tick();
-			if (!selectedModel) {
-				// console.log('No radio button selected');
+			if (!rbGroup) {
 				return;
 			}
 
 			const fieldName = hoveredEl?.innerText as string;
-			// if (extraModels.has(modelName)) {
-			// 	// console.log('extraModels has ', modelName);
-			// 	if (models[modelName] && (models[modelName] as Model).fields) {
-			// 		models[modelName]!.fields = models[modelName]?.fields.filter((f) => f.name !== fieldName) as Field[];
-			// 		extraModels.delete(modelName);
-			// 	}
-			// 	return;
-			// }
-
-			// if (!(selectedModel === includeAll || extraModels.has(selectedModel))) {
-			// 	console.log('addFieldToModel already included in some of models');
-			// 	return;
-			// }
 			const field = getUIField(fieldName);
 			if (field) {
-				// if (field.name === 'password' && passwords > 0) {
-				// 	if (passwords > 0) {
-				// 		(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
-				// 		passwords = 0;
-				// 		return;
-				// 	}
-				// 	console.log('password again');
-				// 	passwords = 0;
-				// 	return;
-				// }
 				if (/password/i.test(field.name)) {
 					field.name = 'password';
 				}
-				if (selectedModel === includeAll) {
+				if (rbGroup === includeAll) {
 					for (const m of extraModels) {
 						if (!models[m]?.fields.includes(field)) {
 							models[m]?.fields.push(field);
 						}
 					}
 				} else {
-					if (!models[selectedModel]?.fields.includes(field)) {
-						console.log('push field', selectedModel, field, models[selectedModel]?.fields);
-						models[selectedModel]?.fields.push(field);
+					if (!models[rbGroup]?.fields.includes(field)) {
+						models[rbGroup]?.fields.push(field);
 					}
 				}
 			}
+			rbGroup = '';
 			// after adding the field to a model clear selected
 			// radio button and hide the radio button tooltip
 			// (e.target as HTMLInputElement).checked = false;
 			(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
-			console.log('exit addFieldToModel extraModels', extraModels);
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			console.log('catch/addFieldToModel', msg);
@@ -194,8 +153,6 @@
 
 	function showCopyFieldTooltip(e: MouseEvent) {
 		e.preventDefault();
-		// killTimeout();
-		// timer = null;
 		if (!extraModelsSize) {
 			return;
 		}
@@ -363,7 +320,6 @@
 				}
 				break;
 			case 'SECTION':
-				console.log('SECTION', el.innerText, modelName);
 				fldName = el.innerText;
 				models[modelName]!.fields = models[modelName]?.fields.filter((field) => field.name !== fldName) as Field[];
 				break;
@@ -373,9 +329,6 @@
 				console.log('[OrmThree] toggleSummary defauls case', el.tagName);
 		}
 	}
-	// function hideTooltipBlock() {
-	// 	killTimeout();
-	// }
 
 	function showInputMessage(
 		msg: string,
@@ -530,25 +483,27 @@
 </script>
 
 {#snippet tooltipBlock()}
-	{#each extraModels as model (model)}
-		<label><input type="radio" bind:group={selectedModel} value={model} />{model}</label>
-	{/each}
-	{#if extraModelsSize >= 2}
-		<label><input type="radio" bind:group={selectedModel} value="All" />{extraModelsSize === 2 ? 'Both' : 'All'}</label>
-	{/if}
+	<div
+		onclick={addFieldToModel}
+		onmouseover={(e) => {
+			e.preventDefault();
+		}}
+		onfocus={(e) => {
+			e.preventDefault();
+		}}
+		onkeydown={() => {}}
+		aria-hidden={true}
+	>
+		{#each extraModels as model (model)}
+			<label><input type="radio" bind:group={rbGroup} value={model} />{model}</label>
+		{/each}
+		{#if extraModelsSize >= 2}
+			<label><input type="radio" bind:group={rbGroup} value="All" />{extraModelsSize === 2 ? 'Both' : 'All'}</label>
+		{/if}
+	</div>
 {/snippet}
 
-<div
-	bind:this={tooltipBlockEl}
-	onclick={addFieldToModel}
-	onmouseover={(e) => {
-		e.preventDefault();
-	}}
-	onfocus={() => {}}
-	class="radio-tooltip hidden"
-	onkeydown={() => {}}
-	aria-hidden={true}
->
+<div bind:this={tooltipBlockEl} class="radio-tooltip hidden">
 	{@render tooltipBlock()}
 </div>
 <div bind:this={notDataEntryEl} class="no-data-entry hidden">
@@ -653,7 +608,7 @@
 
 <!-- no display just a showMessage utils with markup -->
 <Tooltip bind:this={tooltip} />
-<p>selectedModel {selectedModel}</p>
+<p>rbGroup {rbGroup}</p>
 
 <style lang="scss">
 	*,
