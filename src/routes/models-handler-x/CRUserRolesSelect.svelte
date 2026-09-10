@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	export type TProps = {
 		userRoles: string[];
 		modelName: string;
 		models: Models;
-		exportModels?: () => void;
+		callback?: () => void;
 	};
-	let { userRoles, modelName, models = $bindable(), exportModels }: TProps = $props();
+	// let { userRoles, modelName, models = $bindable(), callback }: TProps = $props();
+	let { userRoles, modelName, models = $bindable(), callback }: TProps = $props();
 	// model holds set of selected roles
 	const rolesMap = new SvelteMap<string, SvelteSet<string>>();
 
@@ -48,7 +50,7 @@
 	}
 	function toggleRole(e: MouseEvent, model: string, role: string) {
 		e.preventDefault();
-		//console.log('toggleRole', model, role);
+		// console.log('toggleRole', model, role);
 		let set = rolesMap.get(model);
 
 		if (!set) {
@@ -61,8 +63,12 @@
 		} else {
 			set.add(role);
 		}
-		models[modelName].permissions = [...set].join(' ');
-		exportModels(modelName);
+		(models[modelName] as Model).permissions = [...set].join(',');
+		// tick().then(() => {
+		// 	return new Promise((resolve) => setTimeout(resolve, 3000));
+		// });
+		// console.log((models[modelName] as Model).permissions);
+		callback?.();
 	}
 	function dismiss(e: MouseEvent) {
 		(e.target as HTMLElement).querySelector('.dropdown')?.classList.add('hidden');

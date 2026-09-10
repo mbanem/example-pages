@@ -55,6 +55,18 @@
 	let messageColor = $derived(message === defaultMessage ? '' : 'color:tomato;');
 	const nuiRegex = new RegExp(`\\b@id|@defaults|@updatedAt|@unique\\b`, 'g');
 
+	function callback() {
+		let perms: string = '';
+		if (models) {
+			// Object.entries(models as Models).map((m: Model) => (perms += `${m.name}: m?.permissions`));
+			for (const [k, v] of Object.entries(models)) {
+				if (v.permissions) {
+					perms += `\n ${k}: ${v.permissions}; `;
+				}
+			}
+			console.log('parent permissions', perms);
+		}
+	}
 	export const exportModels = async () => {
 		selectedModels = {};
 		await tick();
@@ -167,7 +179,7 @@
 
 	function isInside(e: MouseEvent) {
 		if (!fieldsRect) {
-			console.log('isInside no fieldsRect');
+			// console.log('isInside no fieldsRect');
 			return;
 		}
 		const rect = fieldsRect as DOMRect; // as defined DOMRect | undefined
@@ -186,7 +198,7 @@
 		if (previousEl) {
 			previousEl.style.color = '';
 		}
-		console.log('showCopyFieldTooltip');
+		// console.log('showCopyFieldTooltip');
 		const el = e.currentTarget as HTMLElement;
 		if (!el) return;
 
@@ -202,11 +214,11 @@
 		await tick();
 
 		hoveredEl = el;
-		console.log('fieldsRect', fieldsRect);
+		// console.log('fieldsRect', fieldsRect);
 		let x = e.clientX + 5;
 		const y = e.clientY;
 		if (extraModels.has(modelName)) {
-			console.log('modelName', modelName);
+			// console.log('modelName', modelName);
 			x = x + 60;
 			tooltip.showTooltip({ x, y }, 'click to remove', 1000, 'above', {
 				color: 'crimson',
@@ -306,12 +318,12 @@
 	// of the ORM Models fieldNames
 	async function toggleDetails(e: ToggleEvent) {
 		// e.preventDefault();	// will not toggle open/close if prevented
-		console.log(e.type);
+		// console.log(e.type);
 		const det = e.target as HTMLDetailsElement;
 		await tick();
 
 		const el = det.firstElementChild as HTMLElement;
-		console.log('toggleDetails summary', el.innerText);
+		// console.log('toggleDetails summary', el.innerText);
 		await tick(); // give DOM time to toggle open/close state
 		let fldName = '';
 		switch (el.tagName) {
@@ -353,7 +365,7 @@
 			case 'SPAN':
 			case 'P':
 			default:
-				console.log('[OrmThree] toggleDetails defauls case', el.tagName);
+			// console.log('[OrmThree] toggleDetails defauls case', el.tagName);
 		}
 	}
 
@@ -449,16 +461,16 @@
 	function removeExtraModelField(e: MouseEvent) {
 		e.preventDefault();
 		const el = e.target as HTMLElement;
-		console.log('removeExtraModelField dataset.extra', el.dataset.extra);
+		// console.log('removeExtraModelField dataset.extra', el.dataset.extra);
 		if (el.dataset.extra === 'false') {
-			console.log('removeExtraModelField exit -- not an extraModel');
+			// console.log('removeExtraModelField exit -- not an extraModel');
 			return;
 		}
 		const fieldName = el.innerText;
-		console.log('[OrmThree] removeExtraModelField', modelName, fieldName);
+		// console.log('[OrmThree] removeExtraModelField', modelName, fieldName);
 		const model = models[modelName];
 		if (!model || !model.fields) {
-			console.log('no model or no model.fields', modelName, model);
+			// console.log('no model or no model.fields', modelName, model);
 			return;
 		}
 		model.fields = model.fields.filter((field) => field.name !== fieldName);
@@ -570,7 +582,7 @@
 </div>
 
 {#snippet permissions(modelName: string)}
-	<CRUserRolesSelect {userRoles} {models} {modelName} {exportModels} />
+	<CRUserRolesSelect {userRoles} bind:models {modelName} bind:callback />
 {/snippet}
 
 {#snippet summaryDetailsModel(modelName: string, ix: number)}
@@ -667,7 +679,6 @@
 
 <!-- not for display just a reference to tooltip.showTooltip utils with markup -->
 <Tooltip bind:this={tooltip} />
-<p>rbGroup {rbGroup}</p>
 
 <style lang="scss">
 	*,
