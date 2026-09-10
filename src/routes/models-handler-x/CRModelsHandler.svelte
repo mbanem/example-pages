@@ -13,6 +13,7 @@
 		selectedModels: SelectedModels;
 		isLoading: boolean;
 		userRoles: string[];
+		appName: string;
 	};
 
 	let {
@@ -20,6 +21,7 @@
 		selectedModels = $bindable({}),
 		isLoading = $bindable(false),
 		userRoles = [],
+		appName,
 	}: TProps = $props();
 
 	let cbGroup = $state<string[]>([]);
@@ -188,8 +190,6 @@
 		const el = e.currentTarget as HTMLElement;
 		if (!el) return;
 
-		previousEl = el;
-		el.style.color = 'tomato';
 		// (tooltipBlockEl as HTMLDivElement).style.opacity = '0';
 		// const el = e.target as HTMLElement;
 		const dataset = el.dataset;
@@ -197,6 +197,8 @@
 		if (dataset.entry === 'false' && !/password/i.test(el.innerText)) {
 			return;
 		}
+		previousEl = el;
+		el.style.color = 'tomato';
 		await tick();
 
 		hoveredEl = el;
@@ -251,7 +253,6 @@
 	async function handleContainerMouseOver(e: MouseEvent) {
 		e.preventDefault();
 		if (!extraModelsSize || !fieldsRect) {
-			console.log('handleContainerMouseOver no extraModls or no fieldsRect');
 			return;
 		}
 		// mouse is hovering over the frid, but if out of the first column
@@ -502,6 +503,10 @@
 			const field = getUIField(fieldName);
 
 			if (field) {
+				if (/password/i.test(field.name)) {
+					field.attrs += '\nto be renamed into password at UI';
+					await tick();
+				}
 				const targetModels = rbGroup === includeAll ? Array.from(extraModels) : [rbGroup];
 
 				for (const m of targetModels) {
@@ -524,6 +529,14 @@
 			}
 			if (anySelected()) exportModels();
 		}
+	}
+	function willBeRouteName(e: MouseEvent) {
+		const val = (e.target as HTMLInputElement).value;
+		tooltip.showTooltip(e, `will be the route name\n${appName}/src/routes/${val}`, 3000, 'above', {
+			color: 'lightgreen',
+			border: '1px solid lightgreen',
+			backgroundColor: 'black',
+		});
 	}
 </script>
 
@@ -569,6 +582,7 @@
 			id="route{modelName}"
 			value={modelName.toLowerCase()}
 			onchange={exportModels}
+			onmouseenter={willBeRouteName}
 			style="position:absolute;top:0;left:4px;color:var(--candidate-color);background-color:var(--candidate-bg-color);width:5rem;height:1rem;padding:0 0 0 5px;margin:4px 0 0 0;border:none;font-size:14px;"
 		/>
 		<input
@@ -597,7 +611,7 @@
 					>
 						{field.name}
 					</section>
-					<p>
+					<p style="white-space: pre-line;">
 						type:{field.type} <span class={attrClass}>{fieldAttrs(field)}</span>
 					</p>
 				{/each}

@@ -355,7 +355,7 @@
 					color: 'lightgreem',
 				});
 			} else {
-				tooltip.showTooltip(e, `Model "${modelName}" is removed.`, 0, 'over', {
+				tooltip.showTooltip(e, `Model "${modelName}" is removed.`, 0, 'above', {
 					backgroundColor: 'navy',
 					color: 'white',
 				});

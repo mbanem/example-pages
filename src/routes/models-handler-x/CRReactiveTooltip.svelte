@@ -4,6 +4,7 @@
 	type TStick = 'left' | 'right' | 'above' | 'below';
 	type TPosition = { x: number; y: number };
 	type THovered = MouseEvent | HTMLElement | TPosition;
+	type TTimer = ReturnType<typeof setTimeout>;
 
 	// Svelte 5 State Trackers
 	let tooltipEl = $state<HTMLElement | undefined>(undefined);
@@ -11,6 +12,7 @@
 	let preferredStick = $state<TStick>('above');
 	let userStyles = $state<Record<string, string>>({});
 	let timeout = $state(3000);
+	let timer: TTimer;
 	let onClose: (() => void) | undefined;
 
 	export function isTooltipActive() {
@@ -19,13 +21,17 @@
 
 	async function fadeOutAndRemove() {
 		if (!tooltipEl) return;
+		clearTimeout(timer);
 		tooltipEl.style.opacity = '0';
-		await new Promise((resolve) => setTimeout(resolve, 300));
-		await tick();
+		// tooltipEl.offsetHeight;
+		// await tick();
+		// await new Promise((resolve) => setTimeout(resolve, 300));
+		// await tick();
 		tooltipEl.remove();
-		await tick();
+		// await tick();
 		tooltipEl = undefined;
 		anchorRect = undefined; // Reset tracking
+		// await tick();
 	}
 
 	// 1. Isolated core layout position calculator
@@ -159,6 +165,12 @@
 		callbackOnClose?: () => void
 	) {
 		try {
+			if (tooltipEl) {
+				hideTooltip();
+				// tick().then(() => {
+				// 	return new Promise((resolve) => setTimeout(resolve, 400));
+				// });
+			}
 			onClose = callbackOnClose;
 
 			timeout = timeout_;
@@ -230,7 +242,7 @@
 			tooltipEl.style.opacity = '1';
 
 			if (timeout > 0) {
-				setTimeout(() => {
+				timer = setTimeout(() => {
 					// document.querySelector('.dynamic-tooltip')?.classList.remove('dynamic-tooltip');
 					if (tooltipEl) {
 						hideTooltip();
@@ -247,6 +259,7 @@
 	export async function hideTooltip() {
 		onClose?.();
 		await fadeOutAndRemove();
+		await tick();
 	}
 </script>
 

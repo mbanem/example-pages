@@ -60,7 +60,7 @@
 		}
 	}
 
-	let appName = $state('');
+	let appName = $state('prisma-app');
 	// const vscode = acquireVsCodeApi()
 	// console.log('models', models??'no models')
 	let inAction = $state(false);
@@ -128,7 +128,6 @@
 			// 	command: 'ready',
 			// 	payload: 'wait for sendingModels from extension',
 			// });
-
 			// const handler = (event: MessageEvent) => {
 			// 	const msg = event.data;
 			// 	//        console.log('[OrmThree] got message', msg.command)
@@ -143,7 +142,6 @@
 			// 			// console.log('[OrmThree] videoUris', pload.videoUris);
 			// 			// isLoading = false;
 			// 			break;
-
 			// 		case 'crudSuportDone':
 			// 			//            console.log('[OrmThree] crudSuportDone')
 			// 			// const crudButton = document.getElementById('createBtnId') as HTMLDivElement;
@@ -156,7 +154,6 @@
 			// };
 			// window.addEventListener('message', handler);
 			// console.log('[OrmThree] mounted event listener for "message"');
-
 			// return () => {
 			// 	window.removeEventListener('message', handler);
 			// };
@@ -305,7 +302,7 @@
 	<div class="application-settings">
 		{@render pageByPageMiddleColumn()}
 	</div>
-	<CRModelsHandler bind:models={models} bind:selectedModels={selectedModels} {isLoading} {userRoles}></CRModelsHandler>
+	<CRModelsHandler bind:models bind:selectedModels {isLoading} {userRoles} {appName}></CRModelsHandler>
 </div>
 
 <style lang="scss">

@@ -86,6 +86,7 @@
 						{role[0]}
 					</span>
 				{/each}
+				<span>&nbsp;</span>
 			{:else}
 				<span class="selectedRoles">permissions</span>
 			{/if}
