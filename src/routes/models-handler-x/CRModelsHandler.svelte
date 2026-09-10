@@ -317,12 +317,12 @@
 			case 'SUMMARY':
 				if (det.open) {
 					toggleListeners(true);
+					modelName = det.innerText?.match(/^\S+/)?.[0] as string;
 					await closeOtherDetails(det);
 				}
 				// else {
 				// 	toggleListeners(false);
 				// }
-				modelName = det.innerText?.match(/^\S+/)?.[0] as string;
 				fieldsRect = getGridFieldsRect() as DOMRect;
 				if (tooltipBlockEl) {
 					(tooltipBlockEl as HTMLDivElement).style.opacity = '0';
@@ -461,6 +461,9 @@
 			return;
 		}
 		model.fields = model.fields.filter((field) => field.name !== fieldName);
+		tick().then(() => {
+			return new Promise((resolve) => setTimeout(resolve, 300));
+		});
 		notDataEntryEl.style.opacity = '0';
 		if (anySelected()) {
 			exportModels();
