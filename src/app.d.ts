@@ -47,9 +47,6 @@ declare global {
 	export type THovered = MouseEvent | HTMLElement | TPos;
 	namespace App {
 		// interface Error {}
-		// interface Locals {
-		// 	user: Types.UserPartial;
-		// }
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
